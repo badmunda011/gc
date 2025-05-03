@@ -31,7 +31,6 @@ async def init():
                 HELPABLE[imported_module.__MODULE__.lower()] = imported_module
     LOGGER("SUKH.plugins").info("Successfully Imported All Modules ")
     await Bad.start()
-    await userbot.start()
     await application.run_polling()
     await application.start()
     LOGGER("SUKH").info("bot start")
