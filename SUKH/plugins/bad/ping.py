@@ -1,7 +1,7 @@
 from pyrogram import filters
 from pyrogram.types import Message
 import time
-from SUKH import ap
+from SUKH import app
 
 @app.on_message(filters.command(["ping", "alive"]))
 async def ping(_, message: Message):
