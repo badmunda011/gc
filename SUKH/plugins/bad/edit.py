@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, CallbackContext
 from telegram.constants import ParseMode 
-from AviaxMusic import application
+from SUKH import application
 
 async def handle_edited_message(update: Update, context: CallbackContext):
     edited_message = update.edited_message
