@@ -207,7 +207,7 @@ API_HASH = getenv("API_HASH", "d927c13beaaf5110f25c505b7c071273")
 
 # ________________________________________________________________________________#
 ## Get it from @Botfather in Telegram.
-BOT_TOKEN = getenv("BOT_TOKEN", "7661215745:AAFbGM-EpbRbKeiK7vmEtpB_OeetSejcFes")
+BOT_TOKEN = getenv("BOT_TOKEN", "7436017266:AAGYQmZXir_GaTHRYTcYxO_khbAodGuneNk")
 
 # ________________________________________________________________________________#
 
@@ -401,7 +401,7 @@ SET_CMDS = getenv("SET_CMDS", "False")
 
 # ________________________________________________________________________________#
 # You'll need a Pyrogram String Session for these vars. Generate String from our session generator bot @YukkiStringBot
-STRING1 = getenv("STRING_SESSION", "BQGIzloAPjfxMsyD1TsLphJEbqQd4qRlys5vRygGUjfmKrEUPSBf4jPpfihXTZdODT-H51gOSM3vFxD1bPuwtzLInDvFMRc1V-g8ATNp2B5IxR_cXTHjMC8p-8bzu4N5FXB51mTv44MH3Q-8cFO9JvimWGy9-LZrLivK5yqzPdjjaIdIZ011znwlE78ef_r4rlWxWivGb0DHDqBPpfwpGVI0Map9cFlkyvtTc8nGQvLdCLpZDqoZ-CHCsOQ-QS-NJvtI7mHY0MUSGJkI6ZTiVnvLQSlBpb71oHz7VQvUln03EbNQ7zRRnayofmUBmxmwTJfemqJ5WMwjK3SAXAL6chY_mFg2hwAAAAG7QxP_AA")
+STRING1 = getenv("STRING_SESSION", "BQGIzloAPjfxMsyD1TqQd4qRlys5vRygGUjfmKrEUPSBf4jPpfihXTZdODT-H51gOSM3vFxD1bPuwtzLc1V-g8ATNp2B5IxR_cXTHjMC8p-8bzu4N5FXB51mTv44MH3Q-8cFO9JvimWGy9-LZrLivK5yqzPdjjaIdIZ011znwlE78ef_r4rlWxWivGb0DHDqBPpfwpGVI0Map9cFlkyvtTc8nGQvLdCLpZDqoZ-CHCsOQ-QS-NJvtI7mHY0MUSGJkI6ZTiVnvLQSlBpb71oHz7VQvUln03EbNQ7zRRnayofmUBmxmwTJfemqJ5WMwjK3SAXAL6chY_mFg2hwAAAAG7QxP_AA")
 STRING2 = getenv("STRING_SESSION2", None)
 STRING3 = getenv("STRING_SESSION3", None)
 STRING4 = getenv("STRING_SESSION4", None)
