@@ -5,6 +5,13 @@ from typing import Dict, List, Union
 
 from SUKH.core.mongo import mongodb
 
+async def get_gbanned() -> list:
+    results = []
+    async for user in gbansdb.find({"user_id": {"$gt": 0}}):
+        user_id = user["user_id"]
+        results.append(user_id)
+    return results
+
 async def get_banned_users() -> list:
     results = []
     async for user in blockeddb.find({"user_id": {"$gt": 0}}):
