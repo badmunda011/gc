@@ -15,7 +15,7 @@ async def handle_edited_message(update: Update, context: CallbackContext):
             await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
 
             # Send warning message
-            warning_text = f"⚠️ {user.mention_html()}, editing messages is not allowed."
+            warning_text = f"⚠️ {user.mention_html()}, ʏᴏᴜʀ ᴇᴅɪᴛᴇᴅ ᴍᴇssᴀɢᴇ ɪs ᴛᴏᴏ ʟᴏɴɢ ᴛʜᴀᴛ's ᴡʜʏ ɪ ʜᴀᴠᴇ ᴅᴇʟᴇᴛᴇᴅ ɪᴛ."
             await context.bot.send_message(chat_id=chat_id, text=warning_text, parse_mode=ParseMode.HTML)
         
         except Exception as e:
