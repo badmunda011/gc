@@ -16,6 +16,7 @@ BANNED_USERS = filters.user()
 # Get it from my.telegram.org
 API_ID = int(getenv("API_ID", "12380656"))
 API_HASH = getenv("API_HASH", "d927c13beaaf5110f25c505b7c071273")
+BOT_USERNAME ="Gcopyright_Bot"
 
 # ________________________________________________________________________________#
 ## Get it from @Botfather in Telegram.
