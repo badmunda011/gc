@@ -21,14 +21,22 @@ START_TEXT = """<b>🤖 ᴄᴏᴘʏʀɪɢʜᴛ ᴘʀᴏᴛᴇᴄᴛᴏʀ 🛡️
 ғᴇᴇʟ ғʀᴇᴇ ғʀᴏᴍ ᴀɴʏ ᴛʏᴘᴇ ᴏғ **ᴄᴏᴘʏʀɪɢʜᴛ** 🛡️
 """
 
-# Define gd_buttons
-gd_buttons = [
-    [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/JARVIS_V2"),
-     InlineKeyboardButton("• ʙᴀᴄᴋ •", callback_data="back_to_start"),
-     InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url="https://t.me/JARVIS_V_SUPPORT")]
-]
+HELP_TEXT = """<b>How to Use the Bot?</b>
 
-# Bot Functionality
+1. Add the bot to your group and make it an admin.
+2. The bot will monitor and remove long-edited texts or copyrighted material.
+3. For more details, contact support.
+
+<b>Stay Secure! 🛡️</b>"""
+
+# Menu Buttons
+def get_start_buttons():
+    return [
+        [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")],
+        [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/JARVIS_V2"), InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", callback_data="update")],
+        [InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")]
+    ]
+
 start_time = time.time()
 
 # Utility functions
@@ -48,11 +56,7 @@ def size_formatter(bytes: int) -> str:
 # Command Handlers
 @app.on_message(filters.command("start"))
 async def start_command_handler(_, msg):
-    buttons = [
-        [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")],
-        [InlineKeyboardButton("• ʜᴀɴᴅʟᴇʀ •", callback_data="vip_back")]
-    ]
-    reply_markup = InlineKeyboardMarkup(buttons)
+    reply_markup = InlineKeyboardMarkup(get_start_buttons())
     await msg.reply_photo(
         photo="https://files.catbox.moe/2ri8px.jpg",
         caption=START_TEXT,
@@ -76,15 +80,23 @@ async def activevc(_, message: Message):
     )
     await message.reply(reply_text, quote=True)
 
-
 # Callback Query Handlers
-@app.on_callback_query(filters.regex("vip_back"))
-async def vip_back_callback_handler(_, query: CallbackQuery):
-    await query.message.edit_caption(caption=START_TEXT, reply_markup=InlineKeyboardMarkup(gd_buttons))
+@app.on_callback_query(filters.regex("help"))
+async def help_callback_handler(_, query: CallbackQuery):
+    buttons = [[InlineKeyboardButton("• ʙᴀᴄᴋ •", callback_data="back_to_start")]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await query.message.edit_caption(
+        caption=HELP_TEXT,
+        reply_markup=reply_markup
+    )
+
+@app.on_callback_query(filters.regex("update"))
+async def update_callback_handler(_, query: CallbackQuery):
+    await query.answer("No updates available right now.", show_alert=True)
 
 @app.on_callback_query(filters.regex("back_to_start"))
 async def back_to_start_callback_handler(_, query: CallbackQuery):
-    await query.answer()
-    await query.message.delete()
-    await start_command_handler(_, query.message)
-    
+    await query.message.edit_caption(
+        caption=START_TEXT,
+        reply_markup=InlineKeyboardMarkup(get_start_buttons())
+    )
