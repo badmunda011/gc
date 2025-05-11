@@ -1,6 +1,7 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pymongo import MongoClient
+from SUKH import app
 from SUKH.misc import SUDOERS
 from config import MONGO_DB_URI as MONGO_URL
 
