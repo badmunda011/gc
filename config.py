@@ -20,9 +20,11 @@ API_HASH = getenv("API_HASH", "d927c13beaaf5110f25c505b7c071273")
 BOT_TOKEN = getenv("BOT_TOKEN", "7332934706:AAHke648XmOaIoqv-7gigzzmGrkp8acaff0")
 
 # ________________________________________________________________________________#
+# Get it from http://dashboard.heroku.com/account
+HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 
-
-# Time zon
+# You have to Enter the app name which you gave to identify your  Music Bot in Heroku.
+HEROKU_APP_NAME = getenv("HEROKU_APP_NAME")
 
 # ________________________________________________________________________________#
 # Database to save your chats and stats... Get MongoDB:-  https://telegra.ph/How-To-get-Mongodb-URI-04-06
