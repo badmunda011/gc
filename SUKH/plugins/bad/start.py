@@ -21,7 +21,7 @@ START_TEXT = """<b>🤖 ᴄᴏᴘʏʀɪɢʜᴛ ᴘʀᴏᴛᴇᴄᴛᴏʀ 🛡️
 ғᴇᴇʟ ғʀᴇᴇ ғʀᴏᴍ ᴀɴʏ ᴛʏᴘᴇ ᴏғ **ᴄᴏᴘʏʀɪɢʜᴛ** 🛡️
 """
 AUTHORIZED_USERS_FILE = "authorized_users.json"
-MAX_MESSAGE_LENGTH = 50
+MAX_MESSAGE_LENGTH = 40
 Devs = ["7588172591"]
 
 # Define gd_buttons
@@ -140,3 +140,28 @@ async def back_to_start_callback_handler(_, query: CallbackQuery):
     await query.answer()
     await query.message.delete()
     await start_command_handler(_, query.message)
+
+# Message Handlers
+async def delete_long_edited_messages(client, edited_message: Message):
+    if edited_message.from_user.id in AUTHORIZED_USERS or edited_message.from_user.id in Devs:
+        return
+    if edited_message.text and len(edited_message.text.split()) > 20:
+        await edited_message.reply_text(f"{edited_message.from_user.mention}, ʏᴏᴜʀ ᴇᴅɪᴛᴇᴅ ᴍᴇssᴀɢᴇ ɪs ᴛᴏᴏ ʟᴏɴɢ ᴛʜᴀᴛ's ᴡʜʏ ɪ ʜᴀᴠᴇ ᴅᴇʟᴇᴛᴇᴅ ɪᴛ.")
+        await edited_message.delete()
+    elif edited_message.sticker or edited_message.animation or edited_message.emoji:
+        return
+
+@app.on_edited_message(filters.group & ~filters.me)
+async def handle_edited_messages(_, edited_message: Message):
+    await delete_long_edited_messages(_, edited_message)
+
+async def delete_long_messages(client, message: Message):
+    if message.from_user.id in AUTHORIZED_USERS or message.from_user.id in Devs:
+        return
+    if message.text and len(message.text.split()) > MAX_MESSAGE_LENGTH:
+        await message.reply_text(f"{message.from_user.mention}, ᴘʟᴇᴀsᴇ ᴋᴇᴇᴘ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ sʜᴏʀᴛ.")
+        await message.delete()
+
+@app.on_message(filters.group & ~filters.me)
+async def handle_messages(_, message: Message):
+    await delete_long_messages(_, message)
