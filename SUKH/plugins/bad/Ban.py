@@ -6,7 +6,14 @@ from SUKH import app
 async def ban_change_notice(client, update: ChatMemberUpdated):
     old = update.old_chat_member
     new = update.new_chat_member
+
+    # Ensure old and new chat members are not None
+    if not old or not new:
+        return  # Skip processing if information is missing
+
     user = new.user
+    if not user:
+        return  # Skip processing if user is None
 
     # User Banned
     if new.status == ChatMemberStatus.BANNED:
