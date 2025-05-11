@@ -18,7 +18,7 @@ def load_authorized_users():
     if os.path.exists(AUTHORIZED_USERS_FILE):
         with open(AUTHORIZED_USERS_FILE, "r") as f:
             return set(json.load(f))
-    return {OWNER_ID}
+    return set(OWNER_ID)  # Convert list of owner IDs to a set
 
 # Save authorized users to file
 def save_authorized_users(users):
