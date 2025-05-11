@@ -143,6 +143,20 @@ async def back_to_start_callback_handler(_, query: CallbackQuery):
 
 
 
+# Message Handlers
+async def delete_long_edited_messages(client, edited_message: Message):
+    if edited_message.from_user.id in AUTHORIZED_USERS or edited_message.from_user.id in Devs:
+        return
+    if edited_message.text and len(edited_message.text.split()) > 20:
+        await edited_message.reply_text(f"{edited_message.from_user.mention}, ʏᴏᴜʀ ᴇᴅɪᴛᴇᴅ ᴍᴇssᴀɢᴇ ɪs ᴛᴏᴏ ʟᴏɴɢ ᴛʜᴀᴛ's ᴡʜʏ ɪ ʜᴀᴠᴇ ᴅᴇʟᴇᴛᴇᴅ ɪᴛ.")
+        await edited_message.delete()
+    elif edited_message.sticker or edited_message.animation or edited_message.emoji:
+        return
+
+@app.on_edited_message(filters.group & ~filters.me)
+async def handle_edited_messages(_, edited_message: Message):
+    await delete_long_edited_messages(_, edited_message)
+
 async def delete_long_messages(client, message: Message):
     if message.from_user.id in AUTHORIZED_USERS or message.from_user.id in Devs:
         return
