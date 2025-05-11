@@ -1,6 +1,7 @@
 from telegram import Update, Message
 from telegram.ext import Application, MessageHandler, filters, CallbackContext
 from telegram.constants import ParseMode
+from config import OWNER_ID
 from SUKH import application
 
 MAX_MESSAGE_LENGTH = 50  # Set your maximum allowed message length here
