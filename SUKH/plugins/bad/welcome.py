@@ -3,7 +3,7 @@ from SUKH import application
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters
 from pymongo import MongoClient
-from config import MONGO_URL
+from config import MONGO_DB_URI as MONGO_URL
 
 # MongoDB Connection
 client = MongoClient(MONGO_URL)
