@@ -51,10 +51,10 @@ async def anti_spam(_, message: Message):
 
     # Keep only messages in last 2 seconds
     user_message_times[(chat_id, user_id)] = [
-        t for t in user_message_times[(chat_id, user_id)] if now - t <= 2
+        t for t in user_message_times[(chat_id, user_id)] if now - t <= 3
     ]
 
-    if len(user_message_times[(chat_id, user_id)]) >= 8:
+    if len(user_message_times[(chat_id, user_id)]) >= 2:
         try:
             # Mute user for 60 seconds
             await app.restrict_chat_member(
