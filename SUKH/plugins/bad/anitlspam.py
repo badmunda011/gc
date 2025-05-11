@@ -97,7 +97,3 @@ async def cleanup_muted_users():
             del muted_users[key]
         await asyncio.sleep(60)  # Run every minute
 
-# Start cleanup task
-@app.on_ready()
-async def start_cleanup():
-    app.loop.create_task(cleanup_muted_users())
