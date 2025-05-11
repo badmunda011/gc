@@ -28,21 +28,23 @@ HELP_TEXT = """💫ʜᴇʀᴇ ᴀʀᴇ sᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅs:
 
 ● **ᴄᴏᴘʏʀɪɢʜᴛ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ**
 
-● ᴅᴏɴ'ᴛ ᴇᴅɪᴛ ᴍsɢ sᴇɴᴅ
+● ᴘɪɴɢ  ᴄʜᴇᴄᴋ ʙᴏᴛ's ʀᴇsᴘᴏɴsᴇ ᴛɪᴍᴇ.
 
-● ᴅᴏɴ'ᴛ ᴀɴʏ ᴅᴇᴄᴏᴍᴇɴᴛ sᴇɴᴅ
+● ᴅᴏɴ'ᴛ ᴇᴅɪᴛ ᴍsɢ sᴇɴᴅ.
 
-● 18+ sᴛɪᴄᴋᴇʀ ʙʟᴏᴄᴋ ᴍᴏʀᴇ sᴛɪᴄᴋᴇʀ ʙʟᴏᴄᴋ 
+● ᴅᴏɴ'ᴛ ᴀɴʏ ᴅᴇᴄᴏᴍᴇɴᴛ sᴇɴᴅ.
 
-● ᴅᴏɴ'ᴛ 50+ ᴡᴏʀᴅs ᴍsɢ sᴇɴᴅ 
+● 18+ sᴛɪᴄᴋᴇʀ ʙʟᴏᴄᴋ ᴍᴏʀᴇ sᴛɪᴄᴋᴇʀ ʙʟᴏᴄᴋ.
 
-● ᴡɪᴛʜᴏᴜᴛ ᴀᴅᴍɪɴ ɴᴏᴛ ᴀᴅᴅ ᴏᴛʜᴇʀ ʙᴏᴛ 
+● ᴅᴏɴ'ᴛ 50+ ᴡᴏʀᴅs ᴍsɢ sᴇɴᴅ.
 
-● ᴀɴʏ ʙᴀɴ ᴜsᴇʀ ʙᴏᴛ sᴇɴᴅ ɴᴏᴛɪғɪᴄᴀᴛɪᴏɴ ɪɴ ɢᴄ 
+● ᴡɪᴛʜᴏᴜᴛ ᴀᴅᴍɪɴ ɴᴏᴛ ᴀᴅᴅ ᴏᴛʜᴇʀ ʙᴏᴛ.
 
-● ᴀɴᴛɪ sᴘᴀᴍ + ᴀɴᴛɪ ʟɪɴᴋ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴅᴇʟᴇᴛᴇ 
+● ᴀɴʏ ʙᴀɴ ᴜsᴇʀ ʙᴏᴛ sᴇɴᴅ ɴᴏᴛɪғɪᴄᴀᴛɪᴏɴ ɪɴ ɢᴄ.
 
-● ᴄᴜsᴛᴏᴍɪᴢᴇ ᴡᴇʟᴄᴏᴍᴇ , ᴄᴜsᴛᴏᴍɪᴢᴇ ɢᴏᴏᴅʙʏᴇ
+● ᴀɴᴛɪ sᴘᴀᴍ + ᴀɴᴛɪ ʟɪɴᴋ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴅᴇʟᴇᴛᴇ. 
+
+● ᴄᴜsᴛᴏᴍɪᴢᴇ ᴡᴇʟᴄᴏᴍᴇ , ᴄᴜsᴛᴏᴍɪᴢᴇ ɢᴏᴏᴅʙʏᴇ.
 """
 
 # Menu Buttons
@@ -113,21 +115,13 @@ async def help_command_handler(_, msg):
 # New Stats Command (Sudo-Only)
 @app.on_message(filters.command("stats") & SUDOERS)
 async def stats_command_handler(_, message: Message):
-    uptime = time_formatter((time.time() - start_time) * 1000)
-    cpu = psutil.cpu_percent()
-    storage = psutil.disk_usage('/')
-    memory = psutil.virtual_memory()
-    python_version = platform.python_version()
+    total_users = await app.get_users_count()
+    total_chats = await app.get_chats_count()
 
     stats_text = (
         f"📊 **Bot Stats:**\n"
-        f"➪ **Uptime:** {uptime}\n"
-        f"➪ **CPU Usage:** {cpu}%\n"
-        f"➪ **Total Storage:** {size_formatter(storage.total)}\n"
-        f"➪ **Used Storage:** {size_formatter(storage.used)}\n"
-        f"➪ **Free Storage:** {size_formatter(storage.free)}\n"
-        f"➪ **RAM Usage:** {size_formatter(memory.used)} / {size_formatter(memory.total)}\n"
-        f"➪ **Python Version:** {python_version}\n"
+        f"➪ **Total Groups:** {total_chats}\n"
+        f"➪ **Total Users:** {total_users}\n"
     )
     await message.reply(stats_text, quote=True)
 
