@@ -17,10 +17,5 @@ async def auto_kick_bot_if_added_by_non_admin(client: Client, update: ChatMember
             member = await client.get_chat_member(chat_id, added_by.id)
             if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
                 await client.kick_chat_member(chat_id, added_bot.id)
-                await client.send_message(
-                    chat_id,
-                    f"**{added_by.mention} tried to add a bot ({added_bot.mention}) without being an admin.**\n"
-                    f"The bot has been removed from the group."
-                )
     except Exception as e:
         print(f"[AntiBotKick Error] {e}")
