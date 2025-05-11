@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 from SUKH import app
 
 flood_count = {}
-FLOOD_LIMIT = 5
-FLOOD_TIMER = 10  # in seconds
+FLOOD_LIMIT = 6
+FLOOD_TIMER = 3  # in seconds
 FLOOD_ACTION_DURATION = 60  # in seconds
 
 # Check if user is admin
