@@ -29,16 +29,22 @@ async def anti_link(_, message: Message):
         except Exception as e:
             print("Link Deletion Error:", e)
 
-# Anti-PDF Filter
+# Anti-File Filter
 @app.on_message(filters.group & filters.document)
-async def anti_pdf(_, message: Message):
-    if message.document and message.document.file_name.endswith(".pdf"):
-        try:
-            await message.delete()
-            warning = to_small_caps(f"{message.from_user.mention} files are not allowed.")
-            await message.chat.send_message(warning)
-        except Exception as e:
-            print("PDF Deletion Error:", e)
+async def anti_files(_, message: Message):
+    allowed_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.mp3', '.mp4')
+    blocked_extensions = tuple(f".{chr(c)}" for c in range(97, 123) if f".{chr(c)}" not in allowed_extensions)
+
+    try:
+        file_name = message.document.file_name.lower()
+        if not file_name.endswith(allowed_extensions):
+            # Block all files except allowed ones
+            if file_name.endswith(blocked_extensions) or "." in file_name:
+                await message.delete()
+                warning = to_small_caps(f"{message.from_user.mention} files are not allowed.")
+                await message.chat.send_message(warning)
+    except Exception as e:
+        print("File Deletion Error:", e)
 
 # Anti-Spam Filter
 @app.on_message(filters.group & filters.text)
