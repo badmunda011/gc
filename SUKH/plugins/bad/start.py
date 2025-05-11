@@ -9,15 +9,16 @@ from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from config import BOT_USERNAME, OWNER_ID
 from SUKH import app
+from SUKH.misc import SUDOERS  # Importing SUDOERS for sudo-only commands
 from config import *
 
 # Constants
 START_TEXT = """╭────────────────────── 
 ╰──● ʜɪ ɪ ᴀᴍ  ˹𝑪𝒐𝒑𝒚𝒓𝒊ɢʜᴛ ✗ 𝜝𝒐𝒕˼🤍
 
-ғʀᴏм ᴄᴏᴘyʀιɢнт ᴘʀᴏтᴇcтιᴏɴ тᴏ ᴍᴀιɴтᴀιɴιɴɢ ᴅᴇcᴏʀυм, ᴡᴇ'vᴇ ɢᴏт ιт cᴏvᴇʀᴇᴅ. 🌙
+ғʀᴏм ᴄᴏᴘʏʀιɢнт ᴘʀᴏтᴇcтιᴏɴ тᴏ ᴍᴀιɴтᴀιɴιɴɢ ᴅᴇcᴏʀυм, ᴡᴇ'vᴇ ɢᴏт ιт cᴏvᴇʀᴇᴅ. 🌙
 
-●ɴᴏ cᴏммᴀɴᴅ, ᴊᴜѕт ᴀᴅᴅ тнιѕ ʙᴏᴛ, ᴇvᴇʀyтнιɴɢ ιѕ ᴀυтᴏ 🍁
+●ɴᴏ cᴏммᴀɴᴅ, ᴊᴜѕт ᴀᴅᴅ тнιѕ ʙᴏт, ᴇvᴇʀyтнιɴɢ ιѕ ᴀυтᴏ 🍁
 
 ⋆━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ
 ᴍᴀᴅᴇ ᴡιтн 🖤 ʙy @II_BAD_BABY_II❣️
@@ -108,6 +109,27 @@ async def help_command_handler(_, msg):
         caption=HELP_TEXT,
         reply_markup=reply_markup
     )
+
+# New Stats Command (Sudo-Only)
+@app.on_message(filters.command("stats") & SUDOERS)
+async def stats_command_handler(_, message: Message):
+    uptime = time_formatter((time.time() - start_time) * 1000)
+    cpu = psutil.cpu_percent()
+    storage = psutil.disk_usage('/')
+    memory = psutil.virtual_memory()
+    python_version = platform.python_version()
+
+    stats_text = (
+        f"📊 **Bot Stats:**\n"
+        f"➪ **Uptime:** {uptime}\n"
+        f"➪ **CPU Usage:** {cpu}%\n"
+        f"➪ **Total Storage:** {size_formatter(storage.total)}\n"
+        f"➪ **Used Storage:** {size_formatter(storage.used)}\n"
+        f"➪ **Free Storage:** {size_formatter(storage.free)}\n"
+        f"➪ **RAM Usage:** {size_formatter(memory.used)} / {size_formatter(memory.total)}\n"
+        f"➪ **Python Version:** {python_version}\n"
+    )
+    await message.reply(stats_text, quote=True)
 
 # Callback Query Handlers
 @app.on_callback_query(filters.regex("help"))
