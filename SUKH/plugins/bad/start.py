@@ -81,7 +81,7 @@ def size_formatter(bytes: int) -> str:
 async def start_command_handler(_, msg):
     reply_markup = InlineKeyboardMarkup(get_start_buttons())
     await msg.reply_photo(
-        photo="https://files.catbox.moe/2ri8px.jpg",
+        photo="https://files.catbox.moe/x4d0nd.jpg",
         caption=START_TEXT,
         reply_markup=reply_markup
     )
@@ -107,7 +107,7 @@ async def activevc(_, message: Message):
 async def help_command_handler(_, msg):
     reply_markup = InlineKeyboardMarkup(get_help_buttons())
     await msg.reply_photo(
-        photo="https://files.catbox.moe/2ri8px.jpg",
+        photo="https://files.catbox.moe/x4d0nd.jpg",
         caption=HELP_TEXT,
         reply_markup=reply_markup
     )
