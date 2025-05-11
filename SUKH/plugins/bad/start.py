@@ -67,12 +67,3 @@ async def activevc(_, message: Message):
     )
     await message.reply(reply_text, quote=True)
 
-# Message Handlers
-async def delete_long_messages(client, message: Message):
-    if message.text and len(message.text.split()) > MAX_MESSAGE_LENGTH:
-        await message.reply_text(f"{message.from_user.mention}, ᴘʟᴇᴀsᴇ ᴋᴇᴇᴘ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ sʜᴏʀᴛ.")
-        await message.delete()
-
-@app.on_message(filters.group & ~filters.me)
-async def handle_messages(_, message: Message):
-    await delete_long_messages(_, message)
