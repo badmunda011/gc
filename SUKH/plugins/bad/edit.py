@@ -9,9 +9,6 @@ from SUKH import application
 
 AUTHORIZED_USERS_FILE = "authorized_users.json"
 MAX_MESSAGE_LENGTH = 50  # Set your maximum allowed message length here
-MESSAGE_LIMIT = 8  # Maximum messages allowed within SPAM_DURATION
-SPAM_DURATION = 1  # Time duration to monitor for spam in seconds
-SPAM_RESTRICTION_DURATION = 60  # Restriction time in seconds
 
 # Load authorized users from file
 def load_authorized_users():
