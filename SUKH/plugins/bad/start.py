@@ -21,7 +21,7 @@ START_TEXT = """<b>🤖 ᴄᴏᴘʏʀɪɢʜᴛ ᴘʀᴏᴛᴇᴄᴛᴏʀ 🛡️
 ғᴇᴇʟ ғʀᴇᴇ ғʀᴏᴍ ᴀɴʏ ᴛʏᴘᴇ ᴏғ **ᴄᴏᴘʏʀɪɢʜᴛ** 🛡️
 """
 AUTHORIZED_USERS_FILE = "authorized_users.json"
-MAX_MESSAGE_LENGTH = 40
+MAX_MESSAGE_LENGTH = 20
 Devs = ["7588172591"]
 
 # Define gd_buttons
