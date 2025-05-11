@@ -8,7 +8,6 @@ from config import OWNER_ID
 from SUKH import application
 
 AUTHORIZED_USERS_FILE = "authorized_users.json"
-MAX_MESSAGE_LENGTH = 50  # Set your maximum allowed message length here
 
 # Load authorized users from file
 def load_authorized_users():
@@ -99,26 +98,6 @@ async def handle_edited_message(update: Update, context: CallbackContext):
         except Exception as e:
             print(f"Failed to delete message: {e}")
 
-# Function to delete long messages
-async def delete_long_messages(update: Update, context: CallbackContext):
-    message = update.message
-    user = message.from_user
-
-    # Skip authorized users
-    if user.id in AUTHORIZED_USERS:
-        return
-    
-    # Check if the message exceeds the maximum length
-    if message.text and len(message.text.split()) > MAX_MESSAGE_LENGTH:
-        try:
-            # Send warning message
-            warning_text = f"⚠️ {user.mention_html()}, ᴘʟᴇᴀsᴇ ᴋᴇᴇᴘ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ sʜᴏʀᴛ."
-            await context.bot.send_message(chat_id=message.chat_id, text=warning_text, parse_mode=ParseMode.HTML)
-
-            # Delete the long message
-            await context.bot.delete_message(chat_id=message.chat_id, message_id=message.message_id)
-        except Exception as e:
-            print(f"Failed to delete long message: {e}")
 
 
 # Bot Handlers
@@ -129,5 +108,3 @@ app_instance.add_handler(CommandHandler("unauth", unauth_user))
 app_instance.add_handler(CommandHandler("listauth", list_authorized_users))
 # Handler for edited messages
 app_instance.add_handler(MessageHandler(filters.ALL & filters.UpdateType.EDITED, handle_edited_message))
-# Handler for long messages
-app_instance.add_handler(MessageHandler(filters.TEXT & filters.ChatType.GROUPS, delete_long_messages))
