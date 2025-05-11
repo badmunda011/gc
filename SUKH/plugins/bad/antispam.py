@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, ChatPermissions
+from pyrogram.types import Message
 import re
 import time
 from collections import defaultdict
@@ -25,7 +25,7 @@ async def anti_link(_, message: Message):
         try:
             await message.delete()
             warning = to_small_caps(f"{message.from_user.mention} links are not allowed.")
-            await message.chat.send_message(warning)
+            await message.reply_text(warning)  # Use reply_text instead of send_message
         except Exception as e:
             print("Link Deletion Error:", e)
 
@@ -42,7 +42,7 @@ async def anti_files(_, message: Message):
             if file_name.endswith(blocked_extensions) or "." in file_name:
                 await message.delete()
                 warning = to_small_caps(f"{message.from_user.mention} files are not allowed.")
-                await message.chat.send_message(warning)
+                await message.reply_text(warning)  # Use reply_text instead of send_message
     except Exception as e:
         print("File Deletion Error:", e)
 
@@ -55,22 +55,17 @@ async def anti_spam(_, message: Message):
 
     user_message_times[(chat_id, user_id)].append(now)
 
-    # Keep only messages in last 2 seconds
+    # Keep only messages in the last 3 seconds
     user_message_times[(chat_id, user_id)] = [
         t for t in user_message_times[(chat_id, user_id)] if now - t <= 3
     ]
 
     if len(user_message_times[(chat_id, user_id)]) >= 2:
         try:
-            # Mute user for 60 seconds
-            await app.restrict_chat_member(
-                chat_id=chat_id,
-                user_id=user_id,
-                permissions=ChatPermissions(),
-                until_date=int(time.time()) + 60
-            )
-            warning = to_small_caps(f"{message.from_user.mention}, you are muted for spamming for 60 seconds.")
-            await message.chat.send_message(warning)
-            user_message_times[(chat_id, user_id)] = []  # Reset after mute
+            # Delete the user's message instead of muting
+            await message.delete()
+            warning = to_small_caps(f"{message.from_user.mention}, please avoid spamming.")
+            await message.reply_text(warning)  # Use reply_text instead of send_message
+            user_message_times[(chat_id, user_id)] = []  # Reset after warning
         except Exception as e:
-            print("Mute Error:", e)
+            print("Spam Deletion Error:", e)
