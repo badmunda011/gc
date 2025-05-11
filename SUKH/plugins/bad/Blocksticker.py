@@ -108,6 +108,8 @@ async def auto_delete_blocked(client: Client, message: Message):
        (sname and blocked.find_one({"type": "pack", "id": sname})):
         await message.delete()
         name = message.from_user.mention
-        await message.chat.send_message(
-            f"**{name}**, please don’t send 18+ stickers."
-              )
+        # Fix: Use the client to send a message to the chat
+        await client.send_message(
+            chat_id=message.chat.id,
+            text=f"**{name}**, please don’t send 18+ stickers."
+        )
