@@ -17,14 +17,16 @@ async def admin_change_notice(client, update: ChatMemberUpdated):
 
     # Promoted to admin
     if old.status != ChatMemberStatus.ADMINISTRATOR and new.status == ChatMemberStatus.ADMINISTRATOR:
-        await update.chat.send_message(
-            f"**{user.mention} ɪꜱ ɴᴏᴡ ᴀɴ {get_status(new.status).upper()} ᴏꜰ ᴛʜɪꜱ ɢʀᴏᴜᴘ.**"
+        await client.send_message(
+            chat_id=update.chat.id,
+            text=f"**{user.mention} ɪꜱ ɴᴏᴡ ᴀɴ {get_status(new.status).upper()} ᴏꜰ ᴛʜɪꜱ ɢʀᴏᴜᴘ.**"
         )
 
     # Demoted from admin
     elif old.status == ChatMemberStatus.ADMINISTRATOR and new.status != ChatMemberStatus.ADMINISTRATOR:
-        await update.chat.send_message(
-            f"**{user.mention} ɪꜱ ɴᴏ ʟᴏɴɢᴇʀ ᴀɴ ᴀᴅᴍɪɴ.**"
+        await client.send_message(
+            chat_id=update.chat.id,
+            text=f"**{user.mention} ɪꜱ ɴᴏ ʟᴏɴɢᴇʀ ᴀɴ ᴀᴅᴍɪɴ.**"
         )
 
 app.add_handler(ChatMemberUpdatedHandler(admin_change_notice))
