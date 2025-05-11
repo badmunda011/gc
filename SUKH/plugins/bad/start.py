@@ -1,12 +1,15 @@
+import logging
 import os
 import platform
 import psutil
 import time
+import json
 
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from config import BOT_USERNAME
+from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from config import BOT_USERNAME, OWNER_ID
 from SUKH import app
+from config import *
 
 # Constants
 START_TEXT = """<b>🤖 ᴄᴏᴘʏʀɪɢʜᴛ ᴘʀᴏᴛᴇᴄᴛᴏʀ 🛡️</b>
@@ -18,7 +21,12 @@ START_TEXT = """<b>🤖 ᴄᴏᴘʏʀɪɢʜᴛ ᴘʀᴏᴛᴇᴄᴛᴏʀ 🛡️
 ғᴇᴇʟ ғʀᴇᴇ ғʀᴏᴍ ᴀɴʏ ᴛʏᴘᴇ ᴏғ **ᴄᴏᴘʏʀɪɢʜᴛ** 🛡️
 """
 
-MAX_MESSAGE_LENGTH = 20
+# Define gd_buttons
+gd_buttons = [
+    [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/JARVIS_V2"),
+     InlineKeyboardButton("• ʙᴀᴄᴋ •", callback_data="back_to_start"),
+     InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url="https://t.me/JARVIS_V_SUPPORT")]
+]
 
 # Bot Functionality
 start_time = time.time()
@@ -42,6 +50,7 @@ def size_formatter(bytes: int) -> str:
 async def start_command_handler(_, msg):
     buttons = [
         [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")],
+        [InlineKeyboardButton("• ʜᴀɴᴅʟᴇʀ •", callback_data="vip_back")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
     await msg.reply_photo(
@@ -67,3 +76,15 @@ async def activevc(_, message: Message):
     )
     await message.reply(reply_text, quote=True)
 
+
+# Callback Query Handlers
+@app.on_callback_query(filters.regex("vip_back"))
+async def vip_back_callback_handler(_, query: CallbackQuery):
+    await query.message.edit_caption(caption=START_TEXT, reply_markup=InlineKeyboardMarkup(gd_buttons))
+
+@app.on_callback_query(filters.regex("back_to_start"))
+async def back_to_start_callback_handler(_, query: CallbackQuery):
+    await query.answer()
+    await query.message.delete()
+    await start_command_handler(_, query.message)
+    
