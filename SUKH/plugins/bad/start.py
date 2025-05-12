@@ -18,15 +18,15 @@ total_users_count = 0  # Example placeholder for total users count
 total_chats_count = 0  # Example placeholder for total chats count
 
 # Constants
-START_TEXT = """╭────────────────────── 
-╰──● ʜɪ ɪ ᴀᴍ  ˹𝑪𝒐𝒑𝒚ʀɪɢʜᴛ ✗ 𝜝𝒐𝒕˼🤍
+START_TEXT = """<blockquote>╭────────────────────── 
+╰──● ʜɪ ɪ ᴀᴍ  ˹𝑪𝒐𝒑𝒚ʀɪɢʜᴛ ✗ 𝜝𝒐𝒕˼🤍<blockquote>
 
-ғʀᴏм ᴄᴏᴘʏʀιɢнт ᴘʀᴏтᴇcтιᴏɴ тᴏ ᴍᴀιɴтᴀιɴιɴɢ ᴅᴇcᴏʀυм, ᴡᴇ'vᴇ ɢᴏт ιт cᴏvᴇʀᴇᴅ. 🌙
+<blockquote>ғʀᴏм ᴄᴏᴘʏʀιɢнт ᴘʀᴏтᴇcтιᴏɴ тᴏ ᴍᴀιɴтᴀιɴιɴɢ ᴅᴇcᴏʀυм, ᴡᴇ'vᴇ ɢᴏт ιт cᴏvᴇʀᴇᴅ. 🌙<blockquote>
 
-●ɴᴏ cᴏммᴀɴᴅ, ᴊᴜѕт ᴀᴅᴅ тнιѕ ʙᴏт, ᴇvᴇʀyтнιɴɢ ιѕ ᴀυтᴏ 🍁
+<blockquote>●ɴᴏ cᴏммᴀɴᴅ, ᴊᴜѕт ᴀᴅᴅ тнιѕ ʙᴏт, ᴇvᴇʀyтнιɴɢ ιѕ ᴀυтᴏ 🍁<blockquote>
 
-⋆━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄
-ᴍᴀᴅᴇ ᴡιтн 🖤 ʙy @II_BAD_BABY_II❣️
+<blockquote>⋆━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄<blockquote>
+<blockquote>ᴍᴀᴅᴇ ᴡιтн 🖤 ʙy @II_BAD_BABY_II❣️<blockquote>
 """
 
 HELP_TEXT = """💫ʜᴇʀᴇ ᴀʀᴇ sᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅs:
@@ -56,7 +56,7 @@ HELP_TEXT = """💫ʜᴇʀᴇ ᴀʀᴇ sᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅs:
 def get_start_buttons():
     return [
         [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")],
-        [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/JARVIS_V2"), InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", callback_data="update")],
+        [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/ll_BAD_MUNDA_ll"), InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", url="https://t.me/HEROKUBIN_01")],
         [InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")]
     ]
 
@@ -133,20 +133,17 @@ async def activevc(_, message: Message):
         f"➪ꜱᴛᴏʀᴀɢᴇ: {size_formatter(storage.total)} [ᴛᴏᴛᴀʟ]\n"
         f"➪{size_formatter(storage.used)} [ᴜsᴇᴅ]\n"
         f"➪{size_formatter(storage.free)} [ғʀᴇᴇ]\n"
-        f"➪ᴊᴀʀᴠɪs ᴠᴇʀsɪᴏɴ: {python_version}"
+        f"➪ᴘʙx ᴠᴇʀsɪᴏɴ: {python_version}"
     )
     await message.reply(reply_text, quote=True)
 
-@app.on_callback_query(filters.regex("update"))
-async def update_callback_handler(_, query: CallbackQuery):
-    await query.answer("No updates available right now.", show_alert=True)
 
 # New Stats Command (Sudo-Only)
 @app.on_message(filters.command("stats") & SUDOERS)
 async def stats_command_handler(_, message: Message):
     stats_text = (
-        f"📊 **Bot Stats:**\n"
-        f"➪ **Total Groups:** {total_chats_count}\n"
-        f"➪ **Total Users:** {total_users_count}\n"
+        f"📊 **ʙᴏᴛ sᴛᴀᴛs**\n"
+        f"➪ ᴛᴏᴛᴀʟ ɢʀᴏᴜᴘ {total_chats_count}\n"
+        f"➪ ᴛᴏᴛᴀʟ ᴜsᴇʀ {total_users_count}\n"
     )
     await message.reply(stats_text, quote=True)
