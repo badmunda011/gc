@@ -111,5 +111,5 @@ async def auto_delete_blocked(client: Client, message: Message):
         # Fix: Use the client to send a message to the chat
         await client.send_message(
             chat_id=message.chat.id,
-            text=f"**{name}**, please don’t send 18+ stickers."
+            text=f"**{name}**, ᴘʟᴇᴀꜱᴇ ᴅᴏɴ’ᴛ ꜱᴇɴᴅ 18+ ꜱᴛɪᴄᴋᴇʀꜱ."
         )
