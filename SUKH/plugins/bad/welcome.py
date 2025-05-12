@@ -5,7 +5,7 @@ from telegram.ext import CommandHandler, MessageHandler, filters
 # Welcome New Users
 async def welcome(update: Update, context):
     for user in update.message.new_chat_members:
-        welcome_message = f"{user.first_name} (@{user.username if user.username else 'username'}) • 🌸 **ʜᴏᴡ ᴀʀᴇ ʏᴏᴜ**?"
+        welcome_message = f"{user.mention_html()}) • 🌸 ʜᴏᴡ ᴀʀᴇ ʏᴏᴜ?"
         await update.message.reply_text(welcome_message, parse_mode='HTML')
 
 # Goodbye User
