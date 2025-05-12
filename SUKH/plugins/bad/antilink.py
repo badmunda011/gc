@@ -1,7 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 import re
-import time
 from collections import defaultdict
 from SUKH import app
 
@@ -11,20 +10,13 @@ LINK_REGEX = r"(https?://\S+|www\.\S+|\S+\.(com|in|net|org|info|xyz))"
 # User spam tracking
 user_message_times = defaultdict(list)
 
-# Small caps converter
-def to_small_caps(text: str) -> str:
-    normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    small = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ"
-    table = str.maketrans(normal, small)
-    return text.translate(table)
-
 # Anti-Link Filter
 @app.on_message(filters.group & filters.text & ~filters.private)
 async def anti_link(_, message: Message):
     if re.search(LINK_REGEX, message.text.lower()):
         try:
             await message.delete()
-            warning = to_small_caps(f"{message.from_user.mention} links are not allowed.")
+            warning = f"{message.from_user.mention} ʟɪɴᴋꜱ ᴀʀᴇ ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ."
             await message.reply_text(warning)  # Use reply_text instead of send_message
         except Exception as e:
             print("Link Deletion Error:", e)
@@ -41,7 +33,7 @@ async def anti_files(_, message: Message):
             # Block all files except allowed ones
             if file_name.endswith(blocked_extensions) or "." in file_name:
                 await message.delete()
-                warning = to_small_caps(f"{message.from_user.mention} files are not allowed.")
+                warning = f"{message.from_user.mention} ꜰɪʟᴇꜱ ᴀʀᴇ ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ."
                 await message.reply_text(warning)  # Use reply_text instead of send_message
     except Exception as e:
         print("File Deletion Error:", e)
