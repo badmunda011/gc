@@ -14,7 +14,7 @@ from config import *
 
 # Constants
 START_TEXT = """╭────────────────────── 
-╰──● ʜɪ ɪ ᴀᴍ  ˹𝑪𝒐𝒑𝒚𝒓𝒊ɢʜᴛ ✗ 𝜝𝒐𝒕˼🤍
+╰──● ʜɪ ɪ ᴀᴍ  ˹𝑪𝒐𝒑𝒚ʀɪɢʜᴛ ✗ 𝜝𝒐𝒕˼🤍
 
 ғʀᴏм ᴄᴏᴘʏʀιɢнт ᴘʀᴏтᴇcтιᴏɴ тᴏ ᴍᴀιɴтᴀιɴιɴɢ ᴅᴇcᴏʀυм, ᴡᴇ'vᴇ ɢᴏт ιт cᴏvᴇʀᴇᴅ. 🌙
 
@@ -55,12 +55,11 @@ def get_start_buttons():
         [InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")]
     ]
 
-def get_help_buttons():
-    return [
-        [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]
-    ]
-
-start_time = time.time()
+def get_help_buttons(is_direct_command=False):
+    if is_direct_command:
+        return [[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]]
+    else:
+        return [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="back_to_start")]]
 
 # Utility functions
 def time_formatter(milliseconds: float) -> str:
@@ -86,6 +85,37 @@ async def start_command_handler(_, msg):
         reply_markup=reply_markup
     )
 
+@app.on_message(filters.command("help"))
+async def help_command_handler(_, msg):
+    reply_markup = InlineKeyboardMarkup(get_help_buttons(is_direct_command=True))
+    await msg.reply_photo(
+        photo="https://files.catbox.moe/x4d0nd.jpg",
+        caption=HELP_TEXT,
+        reply_markup=reply_markup
+    )
+
+# Callback Query Handlers
+@app.on_callback_query(filters.regex("help"))
+async def help_callback_handler(_, query: CallbackQuery):
+    buttons = get_help_buttons(is_direct_command=False)
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await query.message.edit_caption(
+        caption=HELP_TEXT,
+        reply_markup=reply_markup
+    )
+
+@app.on_callback_query(filters.regex("back_to_start"))
+async def back_to_start_callback_handler(_, query: CallbackQuery):
+    await query.message.edit_caption(
+        caption=START_TEXT,
+        reply_markup=InlineKeyboardMarkup(get_start_buttons())
+    )
+
+@app.on_callback_query(filters.regex("close"))
+async def close_callback_handler(_, query: CallbackQuery):
+    await query.message.delete()
+    
+
 @app.on_message(filters.command("ping"))
 async def activevc(_, message: Message):
     uptime = time_formatter((time.time() - start_time) * 1000)
@@ -102,16 +132,12 @@ async def activevc(_, message: Message):
         f"➪ᴊᴀʀᴠɪs ᴠᴇʀsɪᴏɴ: {python_version}"
     )
     await message.reply(reply_text, quote=True)
-
-@app.on_message(filters.command("help"))
-async def help_command_handler(_, msg):
-    reply_markup = InlineKeyboardMarkup(get_help_buttons())
-    await msg.reply_photo(
-        photo="https://files.catbox.moe/x4d0nd.jpg",
-        caption=HELP_TEXT,
-        reply_markup=reply_markup
-    )
-
+    
+@app.on_callback_query(filters.regex("update"))
+async def update_callback_handler(_, query: CallbackQuery):
+    await query.answer("No updates available right now.", show_alert=True)
+    
+    
 # New Stats Command (Sudo-Only)
 @app.on_message(filters.command("stats") & SUDOERS)
 async def stats_command_handler(_, message: Message):
@@ -124,28 +150,4 @@ async def stats_command_handler(_, message: Message):
         f"➪ **Total Users:** {total_users}\n"
     )
     await message.reply(stats_text, quote=True)
-
-# Callback Query Handlers
-@app.on_callback_query(filters.regex("help"))
-async def help_callback_handler(_, query: CallbackQuery):
-    buttons = [[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]]
-    reply_markup = InlineKeyboardMarkup(buttons)
-    await query.message.edit_caption(
-        caption=HELP_TEXT,
-        reply_markup=reply_markup
-    )
-
-@app.on_callback_query(filters.regex("update"))
-async def update_callback_handler(_, query: CallbackQuery):
-    await query.answer("No updates available right now.", show_alert=True)
-
-@app.on_callback_query(filters.regex("back_to_start"))
-async def back_to_start_callback_handler(_, query: CallbackQuery):
-    await query.message.edit_caption(
-        caption=START_TEXT,
-        reply_markup=InlineKeyboardMarkup(get_start_buttons())
-    )
-
-@app.on_callback_query(filters.regex("close"))
-async def close_callback_handler(_, query: CallbackQuery):
-    await query.message.delete()
+    
