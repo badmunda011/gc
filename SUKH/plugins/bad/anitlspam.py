@@ -66,7 +66,7 @@ async def detect_flood(c: Client, m: Message):
                 ChatPermissions(can_send_messages=False),
                 until_date=until_date
             )
-            await m.reply(f"**User {m.from_user.mention} flooded the chat and was muted for 1 minute.**")
+            await m.reply(f"ᴜsᴇʀ {m.from_user.mention} ꜰʟᴏᴏᴅᴇᴅ ᴛʜᴇ ᴄʜᴀᴛ ᴀɴᴅ ᴡᴀꜱ ᴍᴜᴛᴇᴅ ꜰᴏʀ 1 ᴍɪɴᴜᴛᴇ.")
             data["count"] = 0  # Reset after action
 
     except Exception as e:
