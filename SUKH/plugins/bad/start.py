@@ -12,6 +12,11 @@ from SUKH import app
 from SUKH.misc import SUDOERS  # Importing SUDOERS for sudo-only commands
 from config import *
 
+# Global Variables
+start_time = time.time()  # Initialize start_time to track bot uptime
+total_users_count = 0  # Example placeholder for total users count
+total_chats_count = 0  # Example placeholder for total chats count
+
 # Constants
 START_TEXT = """╭────────────────────── 
 ╰──● ʜɪ ɪ ᴀᴍ  ˹𝑪𝒐𝒑𝒚ʀɪɢʜᴛ ✗ 𝜝𝒐𝒕˼🤍
@@ -20,7 +25,7 @@ START_TEXT = """╭────────────────────�
 
 ●ɴᴏ cᴏммᴀɴᴅ, ᴊᴜѕт ᴀᴅᴅ тнιѕ ʙᴏт, ᴇvᴇʀyтнιɴɢ ιѕ ᴀυтᴏ 🍁
 
-⋆━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ
+⋆━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄ׅ━ׄ┄
 ᴍᴀᴅᴇ ᴡιтн 🖤 ʙy @II_BAD_BABY_II❣️
 """
 
@@ -114,7 +119,6 @@ async def back_to_start_callback_handler(_, query: CallbackQuery):
 @app.on_callback_query(filters.regex("close"))
 async def close_callback_handler(_, query: CallbackQuery):
     await query.message.delete()
-    
 
 @app.on_message(filters.command("ping"))
 async def activevc(_, message: Message):
@@ -132,22 +136,17 @@ async def activevc(_, message: Message):
         f"➪ᴊᴀʀᴠɪs ᴠᴇʀsɪᴏɴ: {python_version}"
     )
     await message.reply(reply_text, quote=True)
-    
+
 @app.on_callback_query(filters.regex("update"))
 async def update_callback_handler(_, query: CallbackQuery):
     await query.answer("No updates available right now.", show_alert=True)
-    
-    
+
 # New Stats Command (Sudo-Only)
 @app.on_message(filters.command("stats") & SUDOERS)
 async def stats_command_handler(_, message: Message):
-    total_users = await app.get_users_count()
-    total_chats = await app.get_chats_count()
-
     stats_text = (
         f"📊 **Bot Stats:**\n"
-        f"➪ **Total Groups:** {total_chats}\n"
-        f"➪ **Total Users:** {total_users}\n"
+        f"➪ **Total Groups:** {total_chats_count}\n"
+        f"➪ **Total Users:** {total_users_count}\n"
     )
     await message.reply(stats_text, quote=True)
-    
