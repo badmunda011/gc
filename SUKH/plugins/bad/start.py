@@ -56,7 +56,7 @@ HELP_TEXT = """💫ʜᴇʀᴇ ᴀʀᴇ sᴏᴍᴇ ᴄᴏᴍᴍᴀɴᴅs:
 def get_start_buttons():
     return [
         [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ", url=f"https://t.me/{BOT_USERNAME}?startgroup=true")],
-        [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/ll_BAD_MUNDA_ll"), InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", url="https://t.me/HEROKUBIN_01")],
+        [InlineKeyboardButton("ᴏᴡɴᴇʀ", url="https://t.me/I_AM_SIDHU"), InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", url="https://t.me/HEROKUBIN_01")],
         [InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")]
     ]
 
