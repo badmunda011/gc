@@ -146,8 +146,8 @@ async def check_forcesub(event):
         sender_name = f"<a href='tg://user?id={event.sender_id}'>User</a>"
         await event.respond(
             message=(
-                f"**👋 Hello {sender_name},**\n\n"
-                f"**You need to join the [channel]({channel_url}) to send messages in this group.**"
+                f"<b>👋 Hello {sender_name},</b>\n\n"
+                f"<b>You need to join the <a href=\"{channel_url}\">channel</a> to send messages in this group.</b>"
             ),
             file="https://envs.sh/Tn_.jpg",
             buttons=[[Button.url("๏ Join Channel ๏", channel_url)]],
