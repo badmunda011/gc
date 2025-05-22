@@ -79,10 +79,11 @@ async def list_authorized_users(update: Update, context: CallbackContext):
     authorized_users = "\n".join(map(str, AUTHORIZED_USERS))
     await update.message.reply_text(f"Authorized users:\n{authorized_users}")
 
-# Function to handle edited messages
+# Function to handle edited messages (delete only edited text messages)
 async def handle_edited_message(update: Update, context: CallbackContext):
     edited_message = update.edited_message
-    if edited_message:  # Removed reactions check
+    # Sirf edited text message pe hi kaam kare
+    if edited_message and edited_message.text:
         chat_id = edited_message.chat_id
         message_id = edited_message.message_id
         user = edited_message.from_user
@@ -97,8 +98,7 @@ async def handle_edited_message(update: Update, context: CallbackContext):
         
         except Exception as e:
             print(f"Failed to delete message: {e}")
-
-
+    # Agar edit sirf reaction ka hai (ya text nahi hai) to kuch mat karo
 
 # Bot Handlers
 app_instance = application
