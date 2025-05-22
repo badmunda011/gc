@@ -5,6 +5,7 @@ from telethon.errors import (
     UserAlreadyParticipantError,
     UserNotParticipantError,
 )
+from telethon.tl.functions.channels import GetFullChannelRequest, GetParticipantRequest
 from pymongo import MongoClient
 from SUKH.misc import SUDOERS
 from SUKH import Bad
@@ -51,13 +52,11 @@ async def set_forcesub(event):
             channel_username = f"@{channel.username}"
         else:
             try:
-                full_chat = await Bad(GetFullChatRequest(channel_id))
+                full_chat = await Bad(GetFullChannelRequest(channel))
                 channel_link = full_chat.full_chat.exported_invite.link
             except Exception:
                 channel_link = "https://t.me/"
             channel_username = channel_link
-
-        channel_members_count = (await Bad.get_participants(channel_id, limit=0)).total
 
         # Check if bot is admin in the channel
         bot_id = (await Bad.get_me()).id
@@ -90,8 +89,7 @@ async def set_forcesub(event):
             upsert=True
         )
 
-        # Get user who set the command
-        set_by_user = (f"@{event.sender.username}" if getattr(event.sender, "username", None) 
+        set_by_user = (f"@{event.sender.username}" if getattr(event.sender, "username", None)
                        else (getattr(event.sender, "first_name", "User")))
 
         await event.reply(
@@ -99,7 +97,6 @@ async def set_forcesub(event):
                 f"**🎉 Force subscription set to** [{channel_title}]({channel_username}) **for this group.**\n\n"
                 f"**🆔 Channel ID:** `{channel_id}`\n"
                 f"**🖇️ Channel Link:** [Get Link]({channel_link})\n"
-                f"**📊 Member Count:** {channel_members_count}\n"
                 f"**👤 Set by:** {set_by_user}"
             ),
             file="https://envs.sh/Tn_.jpg",
@@ -141,15 +138,13 @@ async def check_forcesub(event):
 
     try:
         # Check if user is a participant in the channel
-        # If user is not a participant, this will raise UserNotParticipantError
-        await Bad.get_participants(channel_id, limit=0)
+        await Bad(GetParticipantRequest(channel_id, user_id))
         return True
     except UserNotParticipantError:
-        # Delete user's message
         await event.delete()
         channel_url = channel_username if channel_username.startswith("https://") else f"https://t.me/{channel_username.lstrip('@')}"
-        sender_name = (f"<a href='tg://user?id={event.sender_id}'>User</a>")
-        await event.reply(
+        sender_name = f"<a href='tg://user?id={event.sender_id}'>User</a>"
+        await event.respond(
             message=(
                 f"**👋 Hello {sender_name},**\n\n"
                 f"**You need to join the [channel]({channel_url}) to send messages in this group.**"
@@ -160,9 +155,8 @@ async def check_forcesub(event):
         )
         await asyncio.sleep(1)
     except ChatAdminRequiredError:
-        # Disable force subscription if bot is no longer admin
         forcesub_collection.delete_one({"chat_id": chat_id})
-        await event.reply(
+        await event.respond(
             "**🚫 I'm no longer an admin in the forced subscription channel. Force subscription has been disabled.**"
         )
         await asyncio.sleep(1)
@@ -171,6 +165,6 @@ async def check_forcesub(event):
 # Enforce force subscription for group messages
 @Bad.on(events.NewMessage())
 async def enforce_forcesub(event):
-    if event.is_group:
+    if event.is_group and not event.sender.bot:  # bots pe force sub na ho
         if not await check_forcesub(event):
             raise events.StopPropagation
