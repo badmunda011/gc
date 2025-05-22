@@ -12,6 +12,7 @@ from SUKH.misc import SUDOERS
 from SUKH import Bad
 from config import MONGO_DB_URI
 import asyncio
+import os
 
 # MongoDB setup
 fsubdb = MongoClient(MONGO_DB_URI)
@@ -125,8 +126,7 @@ async def close_force_sub(event):
     await event.delete()
 
 
-# --- Yahan se fix code start hai (profile photo, name, etc) ---
-
+# --- Fix code for profile photo, name, etc. ---
 async def check_forcesub(event):
     chat_id = event.chat_id
     user_id = event.sender_id
@@ -162,15 +162,20 @@ async def check_forcesub(event):
         if not sender_full_name:
             sender_full_name = "User"
 
-        # Try to download user's profile photo
+        # Try to download user's profile photo as a jpg file
         profile_pic_path = None
+        temp_file = None
         try:
-            profile_pic_path = await event.client.download_profile_photo(user, file=bytes)
+            temp_file = f"profile_{user_id}.jpg"
+            profile_pic_path = await event.client.download_profile_photo(user, temp_file)
         except Exception:
             profile_pic_path = None
 
-        # If profile_pic_path is bytes, send as file, else as URL
-        photo_arg = profile_pic_path if isinstance(profile_pic_path, (bytes, bytearray)) and profile_pic_path else "https://envs.sh/TnZ.jpg"
+        # Decide what to send as file
+        if profile_pic_path and os.path.exists(profile_pic_path):
+            photo_arg = profile_pic_path
+        else:
+            photo_arg = "https://envs.sh/TnZ.jpg"
 
         # Prepare the clickable name for HTML message
         clickable_name = f"<a href='tg://user?id={user_id}'>{sender_full_name}</a>"
@@ -185,6 +190,13 @@ async def check_forcesub(event):
             parse_mode='html'
         )
         await asyncio.sleep(1)
+        # Cleanup: delete temp profile image
+        if profile_pic_path and os.path.exists(profile_pic_path):
+            try:
+                os.remove(profile_pic_path)
+            except Exception:
+                pass
+
     except ChatAdminRequiredError:
         forcesub_collection.delete_one({"chat_id": chat_id})
         await event.respond(
@@ -199,3 +211,4 @@ async def enforce_forcesub(event):
     if event.is_group and not event.sender.bot:  # bots pe force sub na ho
         if not await check_forcesub(event):
             raise events.StopPropagation
+            
