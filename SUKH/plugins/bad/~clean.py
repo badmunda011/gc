@@ -2,7 +2,8 @@ from telethon import events
 from telethon.tl.functions.channels import GetParticipantsRequest, EditBannedRequest
 from telethon.tl.types import ChannelParticipantsSearch, ChatBannedRights
 
-from SUKH import Bad  # Your custom client
+from SUKH import Bad
+from SUKH.misc import SUDOERS
 
 ban_rights = ChatBannedRights(
     until_date=None,
@@ -11,6 +12,10 @@ ban_rights = ChatBannedRights(
 
 @Bad.on(events.NewMessage(pattern=r"^/clean$"))
 async def clean_deleted_users(event):
+    # SUDOERS check
+    if event.sender_id not in SUDOERS:
+        return await event.reply("This command use only  Bot Owner.")
+
     if not event.is_group:
         return await event.reply("This command only works in groups.")
 
