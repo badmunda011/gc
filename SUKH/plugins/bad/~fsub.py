@@ -4,6 +4,7 @@ from telethon.errors import (
     ChatAdminRequiredError,
     UserAlreadyParticipantError,
     UserNotParticipantError,
+    PhotoInvalidError,
 )
 from telethon.tl.functions.channels import GetFullChannelRequest, GetParticipantRequest
 from pymongo import MongoClient
@@ -123,7 +124,9 @@ async def close_force_sub(event):
     await event.answer("Closed!")
     await event.delete()
 
-# Check force subscription for group messages
+
+# --- Yahan se fix code start hai (profile photo, name, etc) ---
+
 async def check_forcesub(event):
     chat_id = event.chat_id
     user_id = event.sender_id
@@ -143,13 +146,41 @@ async def check_forcesub(event):
     except UserNotParticipantError:
         await event.delete()
         channel_url = channel_username if channel_username.startswith("https://") else f"https://t.me/{channel_username.lstrip('@')}"
-        sender_name = f"<a href='tg://user?id={event.sender_id}'>User</a>"
+
+        # Get user's name and try to fetch profile photo
+        try:
+            user = await event.client.get_entity(user_id)
+        except Exception:
+            user = None
+
+        # Name for display and hyperlink
+        sender_full_name = None
+        if user:
+            sender_full_name = user.first_name
+            if getattr(user, "last_name", None):
+                sender_full_name += f" {user.last_name}"
+        if not sender_full_name:
+            sender_full_name = "User"
+
+        # Try to download user's profile photo
+        profile_pic_path = None
+        try:
+            profile_pic_path = await event.client.download_profile_photo(user, file=bytes)
+        except Exception:
+            profile_pic_path = None
+
+        # If profile_pic_path is bytes, send as file, else as URL
+        photo_arg = profile_pic_path if isinstance(profile_pic_path, (bytes, bytearray)) and profile_pic_path else "https://envs.sh/TnZ.jpg"
+
+        # Prepare the clickable name for HTML message
+        clickable_name = f"<a href='tg://user?id={user_id}'>{sender_full_name}</a>"
+
         await event.respond(
             message=(
-                f"<b>👋 Hello {sender_name},</b>\n\n"
+                f"<b>👋 Hello {clickable_name},</b>\n\n"
                 f"<b>You need to join the <a href=\"{channel_url}\">channel</a> to send messages in this group.</b>"
             ),
-            file="https://envs.sh/Tn_.jpg",
+            file=photo_arg,
             buttons=[[Button.url("๏ Join Channel ๏", channel_url)]],
             parse_mode='html'
         )
