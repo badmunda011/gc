@@ -44,12 +44,19 @@ async def set_forcesub(event):
         # Get channel information
         channel = await Bad.get_entity(channel_input)
         channel_id = channel.id
-        channel_title = channel.title
+        channel_title = getattr(channel, 'title', 'Channel')
         # Fetch invite link if no username is available
-        channel_link = f"https://t.me/{channel.username}" if channel.username else (
-            await Bad.invoke(GetFullChat(chat_id=channel_id))
-        ).full_chat.invite_link
-        channel_username = f"@{channel.username}" if channel.username else channel_link
+        if getattr(channel, 'username', None):
+            channel_link = f"https://t.me/{channel.username}"
+            channel_username = f"@{channel.username}"
+        else:
+            try:
+                full_chat = await Bad(GetFullChatRequest(channel_id))
+                channel_link = full_chat.full_chat.exported_invite.link
+            except Exception:
+                channel_link = "https://t.me/"
+            channel_username = channel_link
+
         channel_members_count = (await Bad.get_participants(channel_id, limit=0)).total
 
         # Check if bot is admin in the channel
@@ -84,7 +91,8 @@ async def set_forcesub(event):
         )
 
         # Get user who set the command
-        set_by_user = f"@{event.sender.username}" if event.sender.username else event.sender.first_name
+        set_by_user = (f"@{event.sender.username}" if getattr(event.sender, "username", None) 
+                       else (getattr(event.sender, "first_name", "User")))
 
         await event.reply(
             message=(
@@ -102,10 +110,8 @@ async def set_forcesub(event):
     except Exception as e:
         await event.reply(
             message=(
-                "**🚫 I'm not an admin in this channel.**\n\n"
-                "**➲ Please make me an admin with:**\n\n"
-                "**➥ Invite New Members**\n\n"
-                "🛠️ **Then use /fsub <channel username> to set force subscription.**"
+                f"**❌ Error:** `{str(e)}`\n\n"
+                "**➲ Please make sure the channel is public or the bot is admin in the channel.**"
             ),
             file="https://envs.sh/TnZ.jpg",
             buttons=[
@@ -135,19 +141,22 @@ async def check_forcesub(event):
 
     try:
         # Check if user is a participant in the channel
-        await Bad.get_participants(channel_id, filter=UserNotParticipantError(user_id))
+        # If user is not a participant, this will raise UserNotParticipantError
+        await Bad.get_participants(channel_id, limit=0)
         return True
     except UserNotParticipantError:
         # Delete user's message
         await event.delete()
         channel_url = channel_username if channel_username.startswith("https://") else f"https://t.me/{channel_username.lstrip('@')}"
+        sender_name = (f"<a href='tg://user?id={event.sender_id}'>User</a>")
         await event.reply(
             message=(
-                f"**👋 Hello {event.sender.mention},**\n\n"
+                f"**👋 Hello {sender_name},**\n\n"
                 f"**You need to join the [channel]({channel_url}) to send messages in this group.**"
             ),
             file="https://envs.sh/Tn_.jpg",
-            buttons=[[Button.url("๏ Join Channel ๏", channel_url)]]
+            buttons=[[Button.url("๏ Join Channel ๏", channel_url)]],
+            parse_mode='html'
         )
         await asyncio.sleep(1)
     except ChatAdminRequiredError:
@@ -160,7 +169,8 @@ async def check_forcesub(event):
     return False
 
 # Enforce force subscription for group messages
-@Bad.on(events.NewMessage(chats=events.ChatType.GROUP))
+@Bad.on(events.NewMessage())
 async def enforce_forcesub(event):
-    if not await check_forcesub(event):
-        raise events.StopPropagation
+    if event.is_group:
+        if not await check_forcesub(event):
+            raise events.StopPropagation
