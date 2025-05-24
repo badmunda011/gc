@@ -46,12 +46,12 @@ def is_sticker_blocked(file_url: str) -> bool:
 @app.on_message(filters.sticker)
 async def check_sticker(app, message: Message):
     try:
-        async for sticker in app.get_file(message.sticker.file_id):
-            file_url = f"https://api.telegram.org/file/bot{app.token}/{sticker.file_path}"
-
-            # Check content using Sightengine
-            if is_sticker_blocked(file_url):
-                await message.delete()
-                await message.reply("**Sticker blocked due to NSFW/Drugs content.**")
-    except Exception as e:
-        print(f"Error: {e}")
+        if not hasattr(message, "sticker") or message.sticker is None:
+            print("No sticker found in the message.")
+            return
+        file = await app.get_file(message.sticker.file_id)
+        file_url = f"https://api.telegram.org/file/bot{app.token}/{file.file_path}"
+        # Check content using Sightengine
+        if is_sticker_blocked(file_url):
+            await message.delete()
+            await message.reply("**Sticker blocked due to NSFW
