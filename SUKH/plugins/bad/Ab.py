@@ -54,5 +54,6 @@ async def check_sticker(app, message: Message):
         # Check content using Sightengine
         if is_sticker_blocked(file_url):
             await message.delete()
-            await message.reply("**Sticker blocked due to NSFW
-
+            await message.reply("**Sticker blocked due to NSFW content.**")
+    except Exception as e:
+        print(f"Error in check_sticker: {e}")
