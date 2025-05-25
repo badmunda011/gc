@@ -2,7 +2,7 @@ import sys
 from os import getenv
 
 from dotenv import load_dotenv
-from pyrogram import filters
+from pyrogram import Client, filters
 import random
 import re
 
