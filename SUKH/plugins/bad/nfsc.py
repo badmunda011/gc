@@ -26,12 +26,12 @@ async def check_nsfw(file_path=None, media_url=None):
         if media_url:
             data['url'] = media_url
             r = requests.post(API_URL, data=data, timeout=15)
-        elif file_path and os.path.exists(file_path):
-            file_size = os.path.getsize(file_path)
+        elif file_path and os.path.exists(str(file_path)):  # str() fix
+            file_size = os.path.getsize(str(file_path))
             if file_size > MAX_FILE_SIZE:
                 print(f"File too large: {file_size} bytes")
                 return None
-            with open(file_path, 'rb') as f:
+            with open(str(file_path), 'rb') as f:
                 files = {'media': f}
                 r = requests.post(API_URL, data=data, files=files, timeout=15)
         else:
@@ -48,21 +48,23 @@ async def check_nsfw(file_path=None, media_url=None):
 
 def convert_webp_to_png(file_path):
     try:
-        if file_path.lower().endswith('.webp'):
-            png_path = file_path.rsplit('.', 1)[0] + '.png'
-            with Image.open(file_path) as img:
+        file_path_str = str(file_path)  # FIX: convert to string
+        if file_path_str.lower().endswith('.webp'):
+            png_path = file_path_str.rsplit('.', 1)[0] + '.png'
+            with Image.open(file_path_str) as img:
                 img.convert('RGB').save(png_path, 'PNG')
-            os.remove(file_path)
+            os.remove(file_path_str)
             return png_path
     except Exception as e:
         print(f"WebP Conversion Error: {e}")
-    return file_path
+    return str(file_path)  # always return string
 
 # 🔥 NEW: Convert .tgs (Lottie) to PNG
 def convert_tgs_to_png(tgs_path):
-    png_path = tgs_path.rsplit('.', 1)[0] + '.png'
+    tgs_path_str = str(tgs_path)  # FIX: convert to string
+    png_path = tgs_path_str.rsplit('.', 1)[0] + '.png'
     try:
-        animation = lottie.parsers.tgs.parse_tgs(tgs_path)
+        animation = lottie.parsers.tgs.parse_tgs(tgs_path_str)
         exporters.export_png(animation, png_path, frame=0, width=512, height=512)
         return png_path
     except Exception as e:
@@ -118,7 +120,7 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         elif update.message.video:
             file = await update.message.video.get_file()
             file_path = await file.download_to_drive()
-            ext = os.path.splitext(file_path)[1].lower()
+            ext = os.path.splitext(str(file_path))[1].lower()
             if ext not in ALLOWED_EXTENSIONS:
                 await update.message.reply_text(f"⚠️ Unsupported video format: {ext}. Supported formats: {', '.join(ALLOWED_EXTENSIONS)}")
                 return
@@ -127,7 +129,7 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         elif update.message.animation:
             file = await update.message.animation.get_file()
             file_path = await file.download_to_drive()
-            ext = os.path.splitext(file_path)[1].lower()
+            ext = os.path.splitext(str(file_path))[1].lower()
             if ext not in ALLOWED_EXTENSIONS:
                 await update.message.reply_text(f"⚠️ Unsupported animation format: {ext}. Supported formats: {', '.join(ALLOWED_EXTENSIONS)}")
                 return
@@ -136,7 +138,7 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         elif update.message.document:
             file = await update.message.document.get_file()
             file_path = await file.download_to_drive()
-            ext = os.path.splitext(file_path)[1].lower()
+            ext = os.path.splitext(str(file_path))[1].lower()
             if ext not in ALLOWED_EXTENSIONS:
                 await update.message.reply_text(f"⚠️ Unsupported document format: {ext}. Supported formats: {', '.join(ALLOWED_EXTENSIONS)}")
                 return
@@ -145,7 +147,7 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         elif update.message.sticker:
             file = await update.message.sticker.get_file()
             file_path = await file.download_to_drive()
-            ext = os.path.splitext(file_path)[1].lower()
+            ext = os.path.splitext(str(file_path))[1].lower()
             if update.message.sticker.is_animated and ext == '.tgs':
                 # Convert animated .tgs sticker to PNG
                 png_path = convert_tgs_to_png(file_path)
@@ -163,8 +165,8 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 temp_file_path = file_path
 
         # Process file if downloaded
-        if file_path and os.path.exists(file_path):
-            ext = os.path.splitext(file_path)[1].lower()
+        if file_path and os.path.exists(str(file_path)):
+            ext = os.path.splitext(str(file_path))[1].lower()
             if ext in ALLOWED_EXTENSIONS or ext == '.png':
                 result = await check_nsfw(file_path=file_path)
                 await handle_nsfw_result(update, context, result)
@@ -184,9 +186,9 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     finally:
         # Cleanup temporary files
         for f in [file_path, temp_file_path]:
-            if f and os.path.exists(f):
+            if f and os.path.exists(str(f)):
                 try:
-                    os.remove(f)
+                    os.remove(str(f))
                 except Exception as e:
                     print(f"File Cleanup Error: {e}")
 
