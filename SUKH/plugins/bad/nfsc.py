@@ -6,15 +6,14 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from SUKH import application
 
-# ✅ For .tgs Lottie support
-import lottie
-from lottie.exporters import exporters
+# ✅ For TGS (animated sticker) conversion
+from lottie.exporters import PNGExporter
+import lottie.parsers.tgs
 
 API_USER = "285702956"
 API_SECRET = "bHHrSFdFdystdQJNN9xxYeCbGk6WoE5X"
 API_URL = "https://api.sightengine.com/1.0/check.json"
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
-
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB max
 
 async def check_nsfw(file_path=None, media_url=None):
@@ -41,7 +40,7 @@ async def check_nsfw(file_path=None, media_url=None):
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        print(f"NSFW Check Error: {e}")
+        print(f"NSFW API Error: {e}")
         return None
 
 def convert_webp_to_png(file_path):
@@ -59,14 +58,15 @@ def convert_webp_to_png(file_path):
 def convert_tgs_to_png(file_path):
     try:
         file_path = str(file_path)
-        out = file_path.replace('.tgs', '.png')
+        out_path = file_path.replace('.tgs', '.png')
         animation = lottie.parsers.tgs.parse_tgs(file_path)
-        exporters.export_png(animation, out, frame=0, width=512, height=512)
+        exporter = PNGExporter(animation, frame=0, width=512, height=512)
+        exporter.export(out_path)
         os.remove(file_path)
-        return out
+        return out_path
     except Exception as e:
         print(f"TGS to PNG Error: {e}")
-    return None
+        return None
 
 def extract_links(text):
     if not text:
@@ -136,14 +136,14 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
             result = await check_nsfw(file_path=file_path)
             await handle_nsfw_result(update, context, result)
 
-        # Text links in caption
+        # Check links in caption/text
         links = extract_links(update.message.caption or update.message.text or "")
         for url in links:
             result = await check_nsfw(media_url=url)
             await handle_nsfw_result(update, context, result)
 
     except Exception as e:
-        print(f"Handler Error: {e}")
+        print(f"Media Handler Error: {e}")
         await update.message.reply_text(f"❌ Error: {e}")
     finally:
         if file_path and os.path.exists(file_path):
