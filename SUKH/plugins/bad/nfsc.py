@@ -7,8 +7,8 @@ from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTyp
 from SUKH import application
 
 # ✅ For TGS (animated sticker) conversion
-from lottie.exporters import PNGExporter
-import lottie.parsers.tgs
+import lottie
+from lottie.importers.tgs import import_tgs
 
 API_USER = "285702956"
 API_SECRET = "bHHrSFdFdystdQJNN9xxYeCbGk6WoE5X"
@@ -59,11 +59,21 @@ def convert_tgs_to_png(file_path):
     try:
         file_path = str(file_path)
         out_path = file_path.replace('.tgs', '.png')
-        animation = lottie.parsers.tgs.parse_tgs(file_path)
-        exporter = PNGExporter(animation, frame=0, width=512, height=512)
-        exporter.export(out_path)
-        os.remove(file_path)
-        return out_path
+
+        # Import the Lottie animation
+        with open(file_path, "rb") as f:
+            animation = import_tgs(f)
+
+        # Render the first frame (0)
+        surface = animation.render_frame(0, 512, 512)
+        if surface is not None:
+            img = Image.fromarray(surface)
+            img.save(out_path)
+            os.remove(file_path)
+            return out_path
+        else:
+            print("TGS render returned None")
+            return None
     except Exception as e:
         print(f"TGS to PNG Error: {e}")
         return None
