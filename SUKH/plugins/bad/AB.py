@@ -4,9 +4,6 @@ from pyrogram.types import Message, User
 from config import OWNER_ID
 from SUKH import app
 
-# Initialize bot with Bot Token
-
-
 # Powerful regex for all types of links, including Telegram links
 BIO_LINK_REGEX = re.compile(
     r"(?:https?://|www\.|t\.me/|telegram\.me/)[\w\-]+(?:\.[\w\-]+)*(?:[/?#][^\s]*)?",
@@ -21,8 +18,8 @@ async def check_bio_for_links(client: Client, message: Message):
 
     # Fetch fresh user profile data for the bio
     try:
-        user_info = await client.get_users(user.id)
-        user_bio = user_info.bio or ""
+        user_info = await client.get_chat(user.id)
+        user_bio = getattr(user_info, "bio", "") or ""
     except Exception as e:
         print(f"Error fetching user bio: {e}")
         user_bio = ""
@@ -46,4 +43,3 @@ async def check_bio_for_links(client: Client, message: Message):
             )
         except Exception as e:
             print(f"Failed to notify owner: {e}")
-
