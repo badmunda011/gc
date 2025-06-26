@@ -1,6 +1,6 @@
 import re
 from pyrogram import Client, filters
-from pyrogram.types import Message, User
+from pyrogram.types import Message, User, ChatPermissions
 from pyrogram.enums import ChatType, ChatMemberStatus
 from config import OWNER_ID
 from SUKH import app
@@ -92,7 +92,7 @@ async def check_bio_for_links(client: Client, message: Message):
                 await client.restrict_chat_member(
                     chat_id=message.chat.id,
                     user_id=user.id,
-                    permissions=None,  # Mute all permissions
+                    permissions=ChatPermissions(),  # All permissions False (mute)
                 )
                 await message.reply(
                     f"🚫 [{user.first_name}](tg://user?id={user.id}) ko 5 warnings ke baad mute kar diya gaya!"
