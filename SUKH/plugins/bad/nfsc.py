@@ -6,6 +6,10 @@ from telegram import Update
 from SUKH import application
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
+# 🔥 NEW (for .tgs support)
+import lottie
+from lottie.exporters import exporters
+
 API_USER = "285702956"
 API_SECRET = "bHHrSFdFdystdQJNN9xxYeCbGk6WoE5X"
 API_URL = "https://api.sightengine.com/1.0/check.json"
@@ -33,7 +37,7 @@ async def check_nsfw(file_path=None, media_url=None):
         else:
             print("No valid file path or URL provided")
             return None
-        r.raise_for_status()  # Raise exception for bad HTTP status
+        r.raise_for_status()
         return r.json()
     except requests.exceptions.RequestException as e:
         print(f"API Request Error: {e}")
@@ -53,6 +57,17 @@ def convert_webp_to_png(file_path):
     except Exception as e:
         print(f"WebP Conversion Error: {e}")
     return file_path
+
+# 🔥 NEW: Convert .tgs (Lottie) to PNG
+def convert_tgs_to_png(tgs_path):
+    png_path = tgs_path.rsplit('.', 1)[0] + '.png'
+    try:
+        animation = lottie.parsers.tgs.parse_tgs(tgs_path)
+        exporters.export_png(animation, png_path, frame=0, width=512, height=512)
+        return png_path
+    except Exception as e:
+        print(f"TGS to PNG conversion error: {e}")
+        return None
 
 def extract_links(text):
     if not text:
@@ -92,6 +107,7 @@ async def handle_nsfw_result(update, context, result):
 
 async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_path = None
+    temp_file_path = None  # For cleanup
     try:
         # Handle Photo
         if update.message.photo:
@@ -125,19 +141,31 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 await update.message.reply_text(f"⚠️ Unsupported document format: {ext}. Supported formats: {', '.join(ALLOWED_EXTENSIONS)}")
                 return
 
-        # Handle Sticker
+        # Handle Sticker (🔥 FULL ANIMATED SUPPORT)
         elif update.message.sticker:
-            if update.message.sticker.is_animated or update.message.sticker.is_video:
-                await update.message.reply_text("⚠️ Animated or video stickers (.tgs) are not supported for NSFW scanning.")
-                return
             file = await update.message.sticker.get_file()
             file_path = await file.download_to_drive()
-            file_path = convert_webp_to_png(file_path)
+            ext = os.path.splitext(file_path)[1].lower()
+            if update.message.sticker.is_animated and ext == '.tgs':
+                # Convert animated .tgs sticker to PNG
+                png_path = convert_tgs_to_png(file_path)
+                if png_path:
+                    temp_file_path = png_path  # For cleanup
+                    file_path = png_path
+                else:
+                    await update.message.reply_text("❌ Could not convert animated sticker for scanning.")
+                    return
+            elif update.message.sticker.is_video:
+                await update.message.reply_text("⚠️ Video stickers are not supported for NSFW scanning.")
+                return
+            else:
+                file_path = convert_webp_to_png(file_path)
+                temp_file_path = file_path
 
         # Process file if downloaded
         if file_path and os.path.exists(file_path):
             ext = os.path.splitext(file_path)[1].lower()
-            if ext in ALLOWED_EXTENSIONS:
+            if ext in ALLOWED_EXTENSIONS or ext == '.png':
                 result = await check_nsfw(file_path=file_path)
                 await handle_nsfw_result(update, context, result)
             else:
@@ -154,11 +182,13 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         print(f"Media Handler Error: {e}")
         await update.message.reply_text(f"❌ Error processing media: {e}")
     finally:
-        if file_path and os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                print(f"File Cleanup Error: {e}")
+        # Cleanup temporary files
+        for f in [file_path, temp_file_path]:
+            if f and os.path.exists(f):
+                try:
+                    os.remove(f)
+                except Exception as e:
+                    print(f"File Cleanup Error: {e}")
 
 async def nsfw_link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
