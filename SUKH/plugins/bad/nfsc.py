@@ -4,10 +4,10 @@ import requests
 import logging
 from pyrogram import filters
 from pyrogram.types import Message
-from PIL import Image  # For WebP to PNG conversion
+from PIL import Image
 from SUKH import app
 
-# Configure logging
+# Logging config
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -46,10 +46,11 @@ def check_nsfw(file_path=None, media_url=None):
             logger.error("No file path or URL provided for NSFW check")
             return None
 
-        response.raise_for_status()  # Raise exception for bad status codes
+        response.raise_for_status()
         result = response.json()
-        logger.info(f"API Response: {result}")
+        logger.info(f"Full API Response JSON: {result}")
         return result
+
     except requests.exceptions.RequestException as e:
         logger.error(f"API Request Error: {e}")
         return None
@@ -58,38 +59,38 @@ def check_nsfw(file_path=None, media_url=None):
         return None
 
 def convert_webp_to_png(file_path):
-    """Convert WebP file to PNG for SightEngine compatibility."""
+    """Convert WebP sticker to PNG."""
     try:
         if file_path.lower().endswith('.webp'):
             png_path = file_path.rsplit('.', 1)[0] + '.png'
             with Image.open(file_path) as img:
                 img.convert('RGB').save(png_path, 'PNG')
             logger.info(f"Converted WebP to PNG: {png_path}")
-            os.remove(file_path)  # Remove original WebP
+            os.remove(file_path)
             return png_path
         return file_path
     except Exception as e:
-        logger.error(f"Error converting WebP to PNG: {e}")
+        logger.error(f"WebP conversion error: {e}")
         return None
 
 def extract_media_links(text):
-    """Extract media links from text."""
+    """Extract media URLs from text."""
     if not text:
         return []
     pattern = r'(https?://[^\s]+(?:\.jpg|\.jpeg|\.png|\.gif|\.webp|\.mp4|\.webm))'
     links = re.findall(pattern, text, flags=re.IGNORECASE)
-    logger.info(f"Extracted media links: {links}")
+    logger.info(f"Extracted links: {links}")
     return links
 
 async def handle_nsfw_response(message: Message, result):
-    """Handle NSFW detection response and take action."""
+    """Process API result and take action."""
     if not result or result.get("status") != "success":
-        logger.error(f"Invalid API response: {result}")
-        await message.reply_text("⚠️ Error checking NSFW content. Please try again.", quote=True)
+        error_msg = result.get('error', {}).get('message', 'Unknown error') if result else 'No response from API'
+        logger.error(f"NSFW API Error: {error_msg}")
+        await message.reply_text(f"❌ NSFW API Error: {error_msg}", quote=True)
         return
 
     nudity = result.get("nudity", {})
-    # Use multiple nudity metrics for better detection
     scores = {
         'sexual_activity': nudity.get('sexual_activity', 0),
         'sexual_display': nudity.get('sexual_display', 0),
@@ -97,77 +98,78 @@ async def handle_nsfw_response(message: Message, result):
         'very_suggestive': nudity.get('very_suggestive', 0),
         'suggestive': nudity.get('suggestive', 0)
     }
-    logger.info(f"Nudity scores: {scores}")
 
-    # Adjust thresholds based on API response structure
-    if any(score > 0.5 for score in scores.values()):
+    # Always show scores for debugging
+    await message.reply_text(
+        f"✅ NSFW Check:\n"
+        f"{', '.join(f'{k}: {v:.3f}' for k, v in scores.items())}",
+        quote=True
+    )
+
+    # Delete if any score > 0.01 (lower threshold for test)
+    if any(score > 0.01 for score in scores.values()):
         try:
             await message.delete()
             await message.reply_text(
-                f"🚫 NSFW Content Detected and Deleted!\n"
-                f"Scores: {', '.join(f'{k}: {v:.2f}' for k, v in scores.items())}"
+                f"🚫 NSFW Detected & Deleted!\n"
+                f"Scores: {', '.join(f'{k}: {v:.3f}' for k, v in scores.items())}",
+                quote=True
             )
-            logger.info(f"Deleted message {message.id} due to NSFW content")
+            logger.info(f"Deleted message {message.id} for NSFW")
         except Exception as e:
-            logger.error(f"Error deleting message {message.id}: {e}")
-            await message.reply_text("⚠️ NSFW content detected, but failed to delete.", quote=True)
+            logger.error(f"Failed to delete message {message.id}: {e}")
+            await message.reply_text("⚠️ NSFW detected but could not delete.", quote=True)
     else:
-        logger.info(f"Message {message.id} is safe (Scores: {scores})")
+        logger.info(f"Message {message.id} is safe.")
 
 @app.on_message(
     (filters.sticker | filters.photo | filters.video | filters.animation | filters.video_note | filters.document) & filters.group
 )
 async def nsfw_media_detector(client, message: Message):
-    """Detect NSFW content in media messages."""
+    """Detect NSFW in media messages."""
     media_path = None
     try:
-        # Download media if present
-        if message.sticker or message.photo or message.video or message.animation or message.video_note or message.document:
-            media_path = await message.download()
+        media_path = await message.download()
+        if not media_path or not os.path.exists(media_path) or os.path.getsize(media_path) == 0:
+            logger.error(f"Media download failed or empty for message {message.id}")
+            await message.reply_text("⚠️ Failed to download media.", quote=True)
+            return
+
+        file_ext = os.path.splitext(media_path)[1].lower()
+        if file_ext not in ALLOWED_EXTENSIONS:
+            logger.warning(f"Unsupported file type: {file_ext}")
+            os.remove(media_path)
+            return
+
+        if message.sticker and file_ext == '.webp':
+            media_path = convert_webp_to_png(media_path)
             if not media_path:
-                logger.error(f"Failed to download media for message {message.id}")
-                await message.reply_text("⚠️ Error downloading media for NSFW check.", quote=True)
+                await message.reply_text("⚠️ Error converting WebP to PNG.", quote=True)
                 return
 
-            # Check file extension
-            file_ext = os.path.splitext(media_path)[1].lower()
-            if file_ext not in ALLOWED_EXTENSIONS:
-                logger.warning(f"Unsupported file extension {file_ext} for message {message.id}")
-                os.remove(media_path)
-                return
+        result = check_nsfw(file_path=media_path)
+        await handle_nsfw_response(message, result)
 
-            # Convert WebP stickers to PNG
-            if message.sticker and file_ext == '.webp':
-                media_path = convert_webp_to_png(media_path)
-                if not media_path:
-                    logger.error(f"Failed to convert WebP sticker for message {message.id}")
-                    return
-
-            # Check NSFW for downloaded file
-            result = check_nsfw(file_path=media_path)
-            await handle_nsfw_response(message, result)
-
-        # Check media links in caption/text
+        # Check any media URLs inside caption
         links = extract_media_links(message.text or "") + extract_media_links(message.caption or "")
         for url in links:
-            result = check_nsfw(media_url=url)
-            await handle_nsfw_response(message, result)
+            url_result = check_nsfw(media_url=url)
+            await handle_nsfw_response(message, url_result)
 
     except Exception as e:
         logger.error(f"Error in nsfw_media_detector for message {message.id}: {e}")
-        await message.reply_text("⚠️ Error processing media for NSFW check.", quote=True)
+        await message.reply_text("⚠️ Media NSFW check error.", quote=True)
     finally:
-        # Clean up downloaded file
         if media_path and os.path.exists(media_path):
             try:
                 os.remove(media_path)
-                logger.info(f"Cleaned up file: {media_path}")
+                logger.info(f"Cleaned: {media_path}")
             except Exception as e:
-                logger.error(f"Error cleaning up file {media_path}: {e}")
+                logger.error(f"Cleanup error: {e}")
 
 @app.on_message(filters.text & filters.group)
 async def nsfw_link_detector(client, message: Message):
-    """Detect NSFW content in text messages with media links."""
+    """Detect NSFW from media links in text messages."""
     try:
         links = extract_media_links(message.text or "")
         for url in links:
@@ -175,4 +177,4 @@ async def nsfw_link_detector(client, message: Message):
             await handle_nsfw_response(message, result)
     except Exception as e:
         logger.error(f"Error in nsfw_link_detector for message {message.id}: {e}")
-        await message.reply_text("⚠️ Error checking links for NSFW content.", quote=True)
+        await message.reply_text("⚠️ Error checking links.", quote=True)
