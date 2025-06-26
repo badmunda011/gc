@@ -5,7 +5,7 @@ from pyrogram.enums import ChatType, ChatMemberStatus
 from config import OWNER_ID
 from SUKH import app
 
-# Warns count dict: {(chat_id, user_id): warn_count}
+# Warn count dictionary: {(chat_id, user_id): warn_count}
 user_warns = {}
 
 BIO_LINK_REGEX = re.compile(
@@ -13,7 +13,7 @@ BIO_LINK_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-# Admin check as you provided
+# Admin check function
 async def admin_check(message: Message) -> bool:
     if not message.from_user:
         return False
@@ -23,8 +23,8 @@ async def admin_check(message: Message) -> bool:
 
     if message.from_user.id in [
         777000,  # Telegram Service Notifications
-        7436017266,  #bot
-        OWNER_ID   # Bot Owner
+        7436017266,  # Bot
+        OWNER_ID  # Bot Owner
     ]:
         return True
 
@@ -47,12 +47,12 @@ async def check_bio_for_links(client: Client, message: Message):
     if not user or user.is_bot:
         return
 
-    # Check admin/owner
+    # Check if user is admin or owner
     is_admin = await admin_check(message)
     if user.id == OWNER_ID or is_admin:
-        return  # Owner ya admin ko ignore karo
+        return
 
-    # Fetch fresh user profile data for the bio
+    # Get latest user bio
     try:
         user_info = await client.get_chat(user.id)
         user_bio = getattr(user_info, "bio", "") or ""
@@ -65,39 +65,38 @@ async def check_bio_for_links(client: Client, message: Message):
         warns = user_warns.get(warn_key, 0) + 1
         user_warns[warn_key] = warns
 
-        # Warn the user
+        # Send warning
         try:
             await message.reply(
-                f"⚠️ [{user.first_name}](tg://user?id={user.id}), "
-                f"your bio contains a link which is not allowed!\n"
-                f"Warning: {warns}/5\n"
-                f"Please remove the link from your bio. 5 warns ke baad aap mute ho jayenge.",
+                f"⚠️ [{user.first_name}](tg://user?id={user.id}) ʏᴏᴜʀ ʙɪᴏ ᴄᴏɴᴛᴀɪɴs ᴀ ʟɪɴᴋ ᴡʜɪᴄʜ ɪs ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ!\n"
+                f"ᴡᴀʀɴɪɴɢ: {warns}/5\n"
+                f"ᴘʟᴇᴀsᴇ ʀᴇᴍᴏᴠᴇ ᴛʜᴇ ʟɪɴᴋ ꜰʀᴏᴍ ʏᴏᴜʀ ʙɪᴏ. ᴀꜰᴛᴇʀ 5 ᴡᴀʀɴs, ʏᴏᴜ ᴡɪʟʟ ʙᴇ ᴍᴜᴛᴇᴅ."
             )
         except Exception as e:
             print(f"Error sending warning: {e}")
 
-        # Notify the OWNER_ID for logging
+        # Notify OWNER
         try:
             username = f"@{user.username}" if user.username else f"User ID: {user.id}"
             await client.send_message(
                 OWNER_ID,
-                f"🚨 {username} bio contains a link in group {message.chat.title} ({message.chat.id}):\n\n{user_bio}\nWarn: {warns}/5"
+                f"🚨 {username} ʜᴀs ᴀ ʟɪɴᴋ ɪɴ ʙɪᴏ ɪɴ ɢʀᴏᴜᴘ {message.chat.title} ({message.chat.id}):\n\n{user_bio}\nWarn: {warns}/5"
             )
         except Exception as e:
             print(f"Failed to notify owner: {e}")
 
-        # Mute user if 5 warns ho gaye
+        # Mute after 5 warns
         if warns >= 5:
             try:
                 await client.restrict_chat_member(
                     chat_id=message.chat.id,
                     user_id=user.id,
-                    permissions=ChatPermissions(),  # All permissions False (mute)
+                    permissions=ChatPermissions(),  # Mute (no permissions)
                 )
                 await message.reply(
-                    f"🚫 [{user.first_name}](tg://user?id={user.id}) ko 5 warnings ke baad mute kar diya gaya!"
+                    f"🚫 [{user.first_name}](tg://user?id={user.id}) ʜᴀs ʙᴇᴇɴ ᴍᴜᴛᴇᴅ ᴀꜰᴛᴇʀ 5 ᴡᴀʀɴɪɴɢs!"
                 )
-                # Optionally, reset warns after mute
+                # Optionally reset warns after mute
                 user_warns[warn_key] = 0
             except Exception as e:
                 print(f"Error muting user: {e}")
