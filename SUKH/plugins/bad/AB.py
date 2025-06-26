@@ -1,9 +1,9 @@
 import re
-from telegram import Update, User
-from telegram.ext import ContextTypes, MessageHandler, filters
+from pyrogram import Client, filters
+from pyrogram.types import Message, User
 
 from config import OWNER_ID
-from SUKH import application
+from SUKH import app
 
 # Powerful regex for all types of links, including Telegram links
 BIO_LINK_REGEX = re.compile(
@@ -11,33 +11,30 @@ BIO_LINK_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-async def check_bio_for_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message is None or update.message.from_user is None:
+@app.on_message(filters.all)
+async def check_bio_for_links(client: Client, message: Message):
+    user: User = message.from_user
+    if not user:
         return
-
-    user: User = update.message.from_user
 
     # Fetch fresh user profile data for the bio
     try:
-        user_info = await context.bot.get_chat(user.id)
+        user_info = await client.get_users(user.id)
         user_bio = getattr(user_info, "bio", "")
     except Exception:
         user_bio = ""
 
     if user_bio and BIO_LINK_REGEX.search(user_bio):
         # Warn the user
-        await update.message.reply_text(
-            f"⚠️ {user.mention_html()}, your bio contains a link which is not allowed!",
-            parse_mode="HTML",
+        await message.reply(
+            f"⚠️ [{user.first_name}](tg://user?id={user.id}), your bio contains a link which is not allowed!",
+            parse_mode="md"
         )
         # Notify the OWNER_ID for logging
         try:
-            await context.bot.send_message(
-                chat_id=OWNER_ID,
-                text=f"🚨 User @{user.username or user.id} bio contains a link:\n\n{user_bio}"
+            await client.send_message(
+                OWNER_ID,
+                f"🚨 User @{user.username or user.id} bio contains a link:\n\n{user_bio}"
             )
         except Exception as e:
             print("Failed to notify owner:", e)
-
-# Register the handler in your bot
-application.add_handler(MessageHandler(filters.ALL, check_bio_for_links))
