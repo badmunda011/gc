@@ -29,7 +29,6 @@ async def check_bio_for_links(client: Client, message: Message):
         try:
             await message.reply(
                 f"⚠️ [{user.first_name}](tg://user?id={user.id}), your bio contains a link which is not allowed!",
-                parse_mode="markdown"
             )
         except Exception as e:
             print(f"Error sending warning: {e}")
