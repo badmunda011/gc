@@ -6,14 +6,15 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from SUKH import application
 
-# ✅ For TGS (animated sticker) conversion
+# ✅ For .tgs Lottie support
 import lottie
-from lottie.importers.tgs import import_tgs
+from lottie.exporters import exporters
 
 API_USER = "285702956"
 API_SECRET = "bHHrSFdFdystdQJNN9xxYeCbGk6WoE5X"
 API_URL = "https://api.sightengine.com/1.0/check.json"
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB max
 
 async def check_nsfw(file_path=None, media_url=None):
@@ -40,7 +41,7 @@ async def check_nsfw(file_path=None, media_url=None):
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        print(f"NSFW API Error: {e}")
+        print(f"NSFW Check Error: {e}")
         return None
 
 def convert_webp_to_png(file_path):
@@ -58,25 +59,14 @@ def convert_webp_to_png(file_path):
 def convert_tgs_to_png(file_path):
     try:
         file_path = str(file_path)
-        out_path = file_path.replace('.tgs', '.png')
-
-        # Import the Lottie animation
-        with open(file_path, "rb") as f:
-            animation = import_tgs(f)
-
-        # Render the first frame (0)
-        surface = animation.render_frame(0, 512, 512)
-        if surface is not None:
-            img = Image.fromarray(surface)
-            img.save(out_path)
-            os.remove(file_path)
-            return out_path
-        else:
-            print("TGS render returned None")
-            return None
+        out = file_path.replace('.tgs', '.png')
+        animation = lottie.parsers.tgs.parse_tgs(file_path)
+        exporters.export_png(animation, out, frame=0, width=512, height=512)
+        os.remove(file_path)
+        return out
     except Exception as e:
         print(f"TGS to PNG Error: {e}")
-        return None
+    return None
 
 def extract_links(text):
     if not text:
@@ -146,14 +136,14 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
             result = await check_nsfw(file_path=file_path)
             await handle_nsfw_result(update, context, result)
 
-        # Check links in caption/text
+        # Text links in caption
         links = extract_links(update.message.caption or update.message.text or "")
         for url in links:
             result = await check_nsfw(media_url=url)
             await handle_nsfw_result(update, context, result)
 
     except Exception as e:
-        print(f"Media Handler Error: {e}")
+        print(f"Handler Error: {e}")
         await update.message.reply_text(f"❌ Error: {e}")
     finally:
         if file_path and os.path.exists(file_path):
