@@ -142,6 +142,6 @@ async def nsfw_link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app_instance = application
 # Handlers
 app_instance.add_handler(MessageHandler(
-    filters.PHOTO | filters.VIDEO | filters.ANIMATION | filters.DOCUMENT | filters.Sticker, nsfw_media_handler))
+    filters.PHOTO | filters.VIDEO | filters.ANIMATION | filters.Sticker, nsfw_media_handler))
 
 app_instance.add_handler(MessageHandler(filters.TEXT, nsfw_link_handler))
