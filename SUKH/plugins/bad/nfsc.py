@@ -6,14 +6,11 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from SUKH import application
 from telegram.error import BadRequest
-import os
-import json
-import cairosvg
-from lottie.parsers.tgs import parse_tgs
-from lottie.exporters.svg import export_svg
 
 import lottie
-
+from lottie.parsers.tgs import parse_tgs
+from lottie.exporters import svg
+import cairosvg
 
 API_USER = "285702956"
 API_SECRET = "bHHrSFdFdystdQJNN9xxYeCbGk6WoE5X"
@@ -59,12 +56,11 @@ def convert_webp_to_png(path):
         print(f"WebP to PNG error: {e}")
     return path
 
-
 def convert_tgs_to_png(path):
     try:
         out = path.replace('.tgs', '.png')
         animation = parse_tgs(path)
-        svg_data = export_svg(animation, frame=0, width=512, height=512)
+        svg_data = svg.export_svg(animation, frame=0)  # Correct for lottie>=0.6
         cairosvg.svg2png(bytestring=svg_data.encode('utf-8'), write_to=out)
         os.remove(path)
         return out
@@ -97,21 +93,12 @@ async def handle_nsfw_result(update, context, result):
     if any(v > 0.5 for v in scores.values()):
         try:
             await update.message.delete()
-            try:
-                await update.message.chat.send_message(
-                    f"🚫 NSFW Detected & Deleted!\n" +
-                    "\n".join(f"{k}: {v:.2f}" for k, v in scores.items())
-                )
-            except Exception as e:
-                # Fallback if can't send to chat
-                await update.effective_chat.send_message(
-                    f"🚫 NSFW Detected & Deleted!\n" +
-                    "\n".join(f"{k}: {v:.2f}" for k, v in scores.items()))
+            await update.message.chat.send_message(
+                f"🚫 NSFW Detected & Deleted!\n" +
+                "\n".join(f"{k}: {v:.2f}" for k, v in scores.items())
+            )
         except Exception as e:
-            try:
-                await update.message.reply_text(f"❌ Delete Failed: {e}")
-            except BadRequest:
-                await update.effective_chat.send_message(f"❌ Delete Failed: {e}")
+            await update.effective_chat.send_message(f"❌ Failed to delete message: {e}")
     else:
         print(f"✅ Safe Content: {scores}")
 
@@ -141,30 +128,19 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 if converted:
                     file_path = converted
                 else:
-                    try:
-                        await update.message.reply_text("❌ Animated Sticker conversion failed.")
-                    except BadRequest:
-                        await update.effective_chat.send_message("❌ Animated Sticker conversion failed.")
+                    await update.message.reply_text("❌ Animated Sticker conversion failed.")
                     return
             elif update.message.sticker.is_video:
-                try:
-                    await update.message.reply_text("❌ Video stickers not supported for NSFW scan.")
-                except BadRequest:
-                    await update.effective_chat.send_message("❌ Video stickers not supported for NSFW scan.")
+                await update.message.reply_text("❌ Video stickers not supported for NSFW scan.")
                 return
             else:
                 file_path = convert_webp_to_png(file_path)
 
         if file_path and os.path.exists(file_path):
-            # PNG Conversion First
             ext = os.path.splitext(file_path)[1].lower()
             if ext not in ALLOWED_EXTENSIONS and not file_path.endswith('.png'):
-                try:
-                    await update.message.reply_text(f"⚠️ Unsupported file type: {ext}")
-                except BadRequest:
-                    await update.effective_chat.send_message(f"⚠️ Unsupported file type: {ext}")
+                await update.message.reply_text(f"⚠️ Unsupported file type: {ext}")
                 return
-
             result = await check_nsfw(file_path=file_path)
             await handle_nsfw_result(update, context, result)
 
@@ -176,10 +152,7 @@ async def nsfw_media_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     except Exception as e:
         print(f"Handler Error: {e}")
-        try:
-            await update.message.reply_text(f"❌ Error: {e}")
-        except BadRequest:
-            await update.effective_chat.send_message(f"❌ Error: {e}")
+        await update.message.reply_text(f"❌ Error: {e}")
     finally:
         if file_path and os.path.exists(file_path):
             try:
