@@ -6,10 +6,14 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from SUKH import application
 from telegram.error import BadRequest
+import os
+import json
+import cairosvg
+from lottie.parsers.tgs import parse_tgs
+from lottie.exporters.svg import export_svg
 
 import lottie
-from lottie.parsers.tgs import parse_tgs
-from lottie.exporters import exporters
+
 
 API_USER = "285702956"
 API_SECRET = "bHHrSFdFdystdQJNN9xxYeCbGk6WoE5X"
@@ -55,11 +59,13 @@ def convert_webp_to_png(path):
         print(f"WebP to PNG error: {e}")
     return path
 
+
 def convert_tgs_to_png(path):
     try:
         out = path.replace('.tgs', '.png')
         animation = parse_tgs(path)
-        exporters.export_png(animation, out, frame=0, width=512, height=512)
+        svg_data = export_svg(animation, frame=0, width=512, height=512)
+        cairosvg.svg2png(bytestring=svg_data.encode('utf-8'), write_to=out)
         os.remove(path)
         return out
     except Exception as e:
