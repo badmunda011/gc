@@ -163,7 +163,8 @@ async def nsfw_media_handler(client, message: Message):
             except:
                 pass
 
-@app.on_message(filters.text & ~filters.command)
+# FIXED LINE: Exclude all command messages using regex (commands start with /)
+@app.on_message(filters.text & ~filters.regex(r"^/"))
 async def nsfw_link_handler(client, message: Message):
     links = extract_links(message.text or "")
     for url in links:
