@@ -163,7 +163,7 @@ async def nsfw_media_handler(client, message: Message):
             except:
                 pass
 
-@app.on_message(filters.text & ~filters.command())
+@app.on_message(filters.text & ~filters.command)
 async def nsfw_link_handler(client, message: Message):
     links = extract_links(message.text or "")
     for url in links:
